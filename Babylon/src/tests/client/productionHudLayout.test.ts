@@ -55,6 +55,34 @@ describe('production HUD visible-canvas layout', () => {
     expect(layout.centerY).toBe(-16)
   })
 
+  it('includes visual-viewport origins in the safe intersection', () => {
+    const layout = calculateProductionUiLayout(
+      {
+        height: 1338,
+        left: -69,
+        top: 20,
+        width: 752
+      },
+      {
+        height: 1284,
+        left: 10,
+        safeAreaBottom: 30,
+        safeAreaLeft: 12,
+        safeAreaRight: 20,
+        safeAreaTop: 10,
+        top: 54,
+        width: 614
+      }
+    )
+
+    expect(layout.left).toBeCloseTo(108.82, 2)
+    expect(layout.right).toBeCloseTo(94.47, 2)
+    expect(layout.top).toBeCloseTo(52.62, 2)
+    expect(layout.bottom).toBeCloseTo(59.79, 2)
+    expect(layout.visibleWidth).toBeCloseTo(695.96, 2)
+    expect(layout.visibleHeight).toBeCloseTo(1487.59, 2)
+  })
+
   it('derives each update from current geometry without drift', () => {
     const portrait = calculateProductionUiLayout(
       { height: 800, left: -50, top: 0, width: 500 },

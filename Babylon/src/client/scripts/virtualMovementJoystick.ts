@@ -23,12 +23,30 @@ type GuiPointerInfo = {
   }
 }
 
+type GuiControlHost = {
+  addControl: (control: Control) => unknown
+  removeControl: (control: Control) => unknown
+}
+
 const idealHeight = 1600
 const rootSize = 260
 const outerSize = 220
-const puckSize = 88
+export const virtualControllerPuckSize = 88
+export const virtualControllerPuckBackground =
+  'rgba(216, 181, 117, 0.76)'
+export const virtualControllerPuckPressedBackground =
+  'rgba(96, 96, 96, 0.92)'
 const layoutMargin = 24
 const deadZone = 0.15
+
+export function setVirtualControllerPuckPressed(
+  puck: Ellipse,
+  pressed: boolean
+): void {
+  puck.background = pressed
+    ? virtualControllerPuckPressedBackground
+    : virtualControllerPuckBackground
+}
 
 export function calculateJoystickInput(
   pointer: Vector2,
@@ -76,10 +94,23 @@ export function calculateJoystickLayout(
   }
 }
 
+export function createVirtualControllerPuck(name: string): Ellipse {
+  const puck = new Ellipse(name)
+  puck.widthInPixels = virtualControllerPuckSize
+  puck.heightInPixels = virtualControllerPuckSize
+  puck.color = 'rgba(255, 247, 220, 0.94)'
+  setVirtualControllerPuckPressed(puck, false)
+  puck.thickness = 4
+
+  return puck
+}
+
 export class VirtualMovementJoystick {
   public readonly root = new Container('MovementJoystickRoot')
   public readonly outer = new Ellipse('MovementJoystickOuter')
-  public readonly puck = new Ellipse('MovementJoystickPuck')
+  public readonly puck = createVirtualControllerPuck(
+    'MovementJoystickPuck'
+  )
 
   private pressed = false
   private enabled = true
@@ -89,7 +120,8 @@ export class VirtualMovementJoystick {
 
   public constructor(
     private readonly texture: AdvancedDynamicTexture,
-    private readonly onInput: (direction: Vector2) => void
+    private readonly onInput: (direction: Vector2) => void,
+    private readonly host: GuiControlHost = texture
   ) {
     this.pointerSurface = this.texture
       .getScene()
@@ -110,16 +142,11 @@ export class VirtualMovementJoystick {
     this.outer.thickness = 5
     this.outer.isPointerBlocker = true
 
-    this.puck.widthInPixels = puckSize
-    this.puck.heightInPixels = puckSize
-    this.puck.color = 'rgba(255, 247, 220, 0.94)'
-    this.puck.background = 'rgba(216, 181, 117, 0.76)'
-    this.puck.thickness = 4
     this.puck.isHitTestVisible = false
 
     this.root.addControl(this.outer)
     this.root.addControl(this.puck)
-    this.texture.addControl(this.root)
+    this.host.addControl(this.root)
 
     this.outer.onPointerDownObservable.add((position, state) => {
       if (!this.enabled || this.activePointerId !== undefined) {
@@ -130,6 +157,7 @@ export class VirtualMovementJoystick {
       this.activePointerId = pointerInfo?.event?.pointerId
       this.captureActivePointer()
       this.pressed = true
+      setVirtualControllerPuckPressed(this.puck, true)
       this.updateInput(position)
     })
     this.outer.onPointerMoveObservable.add(position => {
@@ -185,7 +213,7 @@ export class VirtualMovementJoystick {
     this.outer.onPointerDownObservable.clear()
     this.outer.onPointerMoveObservable.clear()
     this.outer.onPointerUpObservable.clear()
-    this.texture.removeControl(this.root)
+    this.host.removeControl(this.root)
     this.root.dispose()
   }
 
@@ -201,7 +229,9 @@ export class VirtualMovementJoystick {
       radius,
       deadZone
     )
-    const puckTravel = (outerSize - puckSize) * 0.5
+    const puckTravel = (
+      outerSize - virtualControllerPuckSize
+    ) * 0.5
     this.puck.leftInPixels = input.x * puckTravel
     this.puck.topInPixels = -input.y * puckTravel
     this.onInput(input)
@@ -245,6 +275,7 @@ export class VirtualMovementJoystick {
 
   private resetInput(): void {
     this.pressed = false
+    setVirtualControllerPuckPressed(this.puck, false)
     this.puck.leftInPixels = 0
     this.puck.topInPixels = 0
     this.onInput(Vector2.Zero())

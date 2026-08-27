@@ -105,10 +105,11 @@ describe('prototype scene bootstrap', () => {
     )).toBe(1)
     expect(countMatches(
       source,
-      'productionHud.addMovementJoystick('
+      'productionHud.addVirtualController('
     )).toBe(1)
+    expect(source).toContain('onInput: direction => {')
     expect(source).toContain(
-      'direction => runtimeInput.setPlayerAnalogInput(direction)'
+      'runtimeInput.setPlayerAnalogInput(direction)'
     )
     expect(countMatches(source, 'threeFingerTap.dispose()')).toBe(1)
     expect(countMatches(source, 'runtimeInput.dispose()')).toBe(1)
@@ -192,7 +193,7 @@ describe('prototype scene bootstrap', () => {
     expect(source).toContain('startActiveLevel()')
     expect(source).toContain('productionHud.setTitle(')
     expect(source).toContain('runtimeInput.setEnabled(true)')
-    expect(source).toContain('movementJoystick.setEnabled(true)')
+    expect(source).toContain('virtualController.setEnabled(true)')
     expect(source).toContain('camera.attachControl(canvas, true)')
     expect(source).toContain('window.location.reload()')
   })

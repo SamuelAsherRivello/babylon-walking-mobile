@@ -1,13 +1,13 @@
 # Babylon Walking Mobile
 
-This repo is a starting point for Babylon.js projects using TypeScript.
-It includes physics, post-processing, tests, and a modular structure.
+This demo project uses Babylon.js for a simple walking game that works with
+WebGPU on PC and Mobile.
 
 <figure>
   <img
     alt="screenshot"
     src="./Babylon/documentation/images/Screenshot01.png"
-    width="600"
+    width="600px"
   >
   <figcaption>
     Image 1 - Babylon.js Game Engine - HTML5 + WebGPU
@@ -18,20 +18,17 @@ It includes physics, post-processing, tests, and a modular structure.
 
 https://samuelasherrivello.github.io/babylon-walking-mobile/latest/
 
-The browser build is exported and hosted when a GitHub Release is
-published. Versioned releases live under `/releases/<version>/`, and
-`/latest/` points to the newest published release.
+WebGPU not working? See [Troubleshooting](#troubleshooting).
 
 ## Table of Contents
 
 1. [Live Demo](#live-demo)
 2. [Getting Started](#getting-started)
-3. [Release Deployment](#release-deployment)
-4. [Project Overview](#project-overview)
-5. [Project Details](#project-details)
+3. [Project Overview](#project-overview)
+4. [Project Details](#project-details)
+5. [Troubleshooting](#troubleshooting)
 6. [Resources](#resources)
 7. [Credits](#credits)
-8. [OpenSpec](#openspec)
 
 ## Getting Started
 
@@ -51,53 +48,10 @@ published. Versioned releases live under `/releases/<version>/`, and
 - `npm run check`: Check TypeScript.
 - `npm run run_unit_tests`: Run unit tests.
 
-## OpenSpec
-
-[OpenSpec](https://openspec.dev/) keeps feature intent, implementation, and
-current specifications aligned.
-
-| # | Name | Command | Comment |
-| --- | --- | --- | --- |
-| 1 | Explore | `/opsx:explore` | Optional feature discovery and planning. |
-| 2 | Propose | `/opsx:propose <name>` | Creates one focused feature change. |
-| 3 | Apply | `/opsx:apply <name>` | Implements the change and completes its tasks. |
-| 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving the change. |
-| 5 | Archive | `/opsx:archive <name>` | Finalizes specs and archives the completed change. |
-
-## Release Deployment
-
-GitHub Releases are the publishing boundary. Normal commits do not deploy
-the project.
-
-Before the first release, open `Settings > Pages` on GitHub and set the
-source to `GitHub Actions`. Then publish a GitHub Release whose tag looks
-like `v0.01` or `v1.2.3`.
-
-The `ReleaseWebBuildToGithubPages` workflow performs these steps:
-
-1. Checks out the released tag.
-2. Installs dependencies from `Babylon/package-lock.json`.
-3. Runs the TypeScript check and unit tests.
-4. Builds the Vite app from the `Babylon` folder.
-5. Attaches `babylon-web-build.zip` to the GitHub Release.
-6. Publishes every stored release build to GitHub Pages.
-
-| URL | Purpose |
-| --- | ------- |
-| `/latest/` | Redirects to the newest published release. |
-| `/releases/v0.01/` | Plays one immutable versioned build. |
-
-Each release asset is the source for its versioned Pages folder. When a
-new release is published, the workflow reconstructs the Pages site from
-all release assets and updates only the `/latest/` redirect.
-
 ## Project Overview
 
 This repo demonstrates browser-based game development with Babylon.js,
-TypeScript, and modular architecture. It includes physics integration,
-post-processing, and input handling.
-
-Use cases include prototypes, educational projects, and browser games.
+TypeScript, and WebGPU.
 
 ### Documentation
 
@@ -139,6 +93,44 @@ Use cases include prototypes, educational projects, and browser games.
 - `typescript`: TypeScript compiler.
 - `eslint`: Linting for TypeScript.
 - `vitest`: Unit testing for TypeScript.
+
+### OpenSpec
+
+[OpenSpec](https://openspec.dev/) keeps feature intent, implementation, and
+current specifications aligned.
+
+| # | Name | Command | Comment |
+| --- | --- | --- | --- |
+| 1 | Explore | `/opsx:explore` | Optional feature discovery and planning. |
+| 2 | Propose | `/opsx:propose <name>` | Creates one focused feature change. |
+| 3 | Apply | `/opsx:apply <name>` | Implements the change and completes its tasks. |
+| 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving the change. |
+| 5 | Archive | `/opsx:archive <name>` | Finalizes specs and archives the completed change. |
+
+## Troubleshooting
+
+### WebGPU not working?
+
+First, open the [official WebGPU Samples hello-triangle
+test](https://webgpu.github.io/webgpu-samples/?sample=helloTriangle). If that
+does not render, the browser or device cannot currently run this project's
+WebGPU path.
+
+For Chrome-specific troubleshooting, see the official [WebGPU
+documentation](https://developer.chrome.com/docs/web-platform/webgpu/). It
+covers browser requirements, secure origins, graphics acceleration,
+`chrome://gpu`, and the `enable-unsafe-webgpu` development flag.
+
+Third-party references:
+
+- [WebGPU Report](https://webgpureport.org/) shows the detected adapter,
+  limits, and features.
+- [WebGPU Fundamentals](https://webgpufundamentals.org/) explains compatibility
+  mode and its experimental Chrome flag.
+- [WebGPU Check](https://webgpucheck.com/) provides browser-specific enablement
+  guidance and diagnostics.
+- [Can I use: WebGPU](https://caniuse.com/webgpu) tracks current browser
+  support, including mobile browsers.
 
 ## Resources
 

@@ -7,6 +7,12 @@ import { AddOrbiter } from './addOrbiter'
 import { addPostProcess } from './addPostProcess'
 import { DebugHud } from './debugHud'
 import {
+  applyGameCanvasLayout,
+  calculateGameCanvasLayout,
+  portraitMobileMediaQuery
+} from './gameViewport'
+import { createGameplayActions } from './gameplayActions'
+import {
   debugPreferenceDefaults,
   getDebugInputLabels,
   mobileDebugInputLabels,
@@ -24,6 +30,7 @@ import {
 } from './level'
 import { OrbiterModel } from './model/orbiterModel'
 import { Orbiter } from './orbiter'
+import { PlayerActionController } from './playerActions'
 import { ProductionHud } from './productionHud'
 import { readProductionUiViewport } from './productionHudLayout'
 import {
@@ -55,6 +62,27 @@ async function main() {
   const showLoader = false
   const canvas = document.createElement('canvas')
   document.body.append(canvas)
+  const portraitMobileMedia = window.matchMedia(
+    portraitMobileMediaQuery
+  )
+  let currentUiViewport = readProductionUiViewport(
+    document.documentElement
+  )
+  const updateCanvasPresentation = () => {
+    currentUiViewport = readProductionUiViewport(
+      document.documentElement
+    )
+    const canvasLayout = calculateGameCanvasLayout(
+      currentUiViewport,
+      portraitMobileMedia.matches
+    )
+    applyGameCanvasLayout(
+      canvas,
+      canvasLayout,
+      portraitMobileMedia.matches
+    )
+  }
+  updateCanvasPresentation()
 
   if (showLoader) {
     const loaderDiv = document.createElement('div')
@@ -220,6 +248,7 @@ async function main() {
     debugHud.setRenderingResolution(snapshot)
   }
   const handleResize = () => {
+    updateCanvasPresentation()
     synchronizeRenderResolution()
     updateProductionUiLayout()
     adjustUIForInspector()
@@ -232,6 +261,10 @@ async function main() {
   window.addEventListener('resize', handleResize)
   window.addEventListener('orientationchange', handleResize)
   document.addEventListener('fullscreenchange', handleResize)
+  portraitMobileMedia.addEventListener('change', handleResize)
+  const visualViewport = window.visualViewport
+  visualViewport?.addEventListener('resize', handleResize)
+  visualViewport?.addEventListener('scroll', handleResize)
 
   let addOrbiter = new AddOrbiterClass(
     scene,
@@ -240,10 +273,6 @@ async function main() {
     tweens,
     orbiterModel
   )
-
-  const createOrbiter = () => {
-    orbiters.push(addOrbiter.create())
-  }
 
   const world = await createGameWorld(
     scene,
@@ -268,10 +297,19 @@ async function main() {
   }
   const camera = createPrototypeCamera(scene)
   configureRuntimeCamera(camera, prototype.player)
+  const playerActions = new PlayerActionController(
+    scene,
+    prototype.player
+  )
+  const gameplayActions = createGameplayActions({
+    onJump: () => playerActions.jump(),
+    onShoot: () => playerActions.shoot()
+  })
   const runtimeInput = new RuntimeInputController(
     prototype.player,
     camera,
-    window
+    window,
+    gameplayActions
   )
 
   const maximumInventorySlotCount = Math.max(
@@ -287,9 +325,15 @@ async function main() {
     ),
     maximumInventorySlotCount
   )
-  const movementJoystick = productionHud.addMovementJoystick(
-    direction => runtimeInput.setPlayerAnalogInput(direction)
-  )
+  const virtualController = productionHud.addVirtualController({
+    actions: gameplayActions,
+    movement: {
+      label: 'Move',
+      onInput: direction => {
+        runtimeInput.setPlayerAnalogInput(direction)
+      }
+    }
+  })
   updateProductionUiLayout = () => {
     const canvasRect = canvas.getBoundingClientRect()
     productionHud.updateLayout(
@@ -299,7 +343,7 @@ async function main() {
         top: canvasRect.top,
         width: canvasRect.width
       },
-      readProductionUiViewport(document.documentElement)
+      currentUiViewport
     )
   }
   updateProductionUiLayout()
@@ -316,6 +360,7 @@ async function main() {
     const spawn = definition.playerSpawn
     prototype.player.position.set(spawn.x, spawn.y, spawn.z)
     prototype.player.rotation.y = 0
+    playerActions.reset(spawn.y)
     walkableArea.constrainPlayer()
 
     for (const zone of zones) {
@@ -336,7 +381,7 @@ async function main() {
     ))
     productionHud.hidePrompt()
     runtimeInput.setEnabled(true)
-    movementJoystick.setEnabled(true)
+    virtualController.setEnabled(true)
     camera.attachControl(canvas, true)
     isCompletionActionPending = false
     const questBeginningSoundUrl = getQuestSoundUrl(
@@ -368,7 +413,7 @@ async function main() {
     }
 
     runtimeInput.setEnabled(false)
-    movementJoystick.setEnabled(false)
+    virtualController.setEnabled(false)
     camera.detachControl()
     const isFinalLevel = progression.isFinalLevel
     productionHud.showPrompt({
@@ -431,7 +476,6 @@ async function main() {
       debugPreferences.inspectorOpen = inspectorOpen
       saveDebugPreferences()
     },
-    onOrbiter: createOrbiter,
     onAntialiasing: () => {
       configuration.antialias = !configuration.antialias
       debugPreferences.antialias = configuration.antialias
@@ -591,6 +635,7 @@ async function main() {
     const inputDeltaSeconds = (now - lastInputTime) / 1000
     lastInputTime = now
     runtimeInput.update(inputDeltaSeconds)
+    playerActions.update(inputDeltaSeconds)
     walkableArea.constrainPlayer()
     for (const zone of zones) {
       zone.update(prototype.player.position)
@@ -618,12 +663,16 @@ async function main() {
   const disposeRuntime = () => {
     threeFingerTap.dispose()
     runtimeInput.dispose()
+    playerActions.dispose()
     productionHud.dispose()
     resizeObserver.disconnect()
     observer.disconnect()
     window.removeEventListener('resize', handleResize)
     window.removeEventListener('orientationchange', handleResize)
     document.removeEventListener('fullscreenchange', handleResize)
+    portraitMobileMedia.removeEventListener('change', handleResize)
+    visualViewport?.removeEventListener('resize', handleResize)
+    visualViewport?.removeEventListener('scroll', handleResize)
     engine.dispose()
   }
   window.addEventListener('beforeunload', disposeRuntime, {

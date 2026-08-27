@@ -10,7 +10,9 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   VirtualMovementJoystick,
   calculateJoystickInput,
-  calculateJoystickLayout
+  calculateJoystickLayout,
+  virtualControllerPuckBackground,
+  virtualControllerPuckPressedBackground
 } from '../../client/scripts/virtualMovementJoystick'
 
 class FakePointerSurface extends EventTarget {
@@ -146,6 +148,40 @@ describe('virtual movement joystick model', () => {
 })
 
 describe('VirtualMovementJoystick GUI lifecycle', () => {
+  it('darkens the puck only while a pointer is held down', () => {
+    const { texture } = createHarness()
+    const joystick = new VirtualMovementJoystick(texture, vi.fn())
+    const pointerInfo = {
+      event: { pointerId: 6 }
+    }
+
+    expect(joystick.puck.background).toBe(
+      virtualControllerPuckBackground
+    )
+    joystick.outer.onPointerDownObservable.notifyObservers(
+      new Vector2WithInfo(new Vector2(100, 100)),
+      -1,
+      joystick.outer,
+      joystick.outer,
+      pointerInfo
+    )
+    expect(joystick.puck.background).toBe(
+      virtualControllerPuckPressedBackground
+    )
+
+    joystick.outer.onPointerUpObservable.notifyObservers(
+      new Vector2WithInfo(new Vector2(100, 100)),
+      -1,
+      joystick.outer,
+      joystick.outer,
+      pointerInfo
+    )
+    expect(joystick.puck.background).toBe(
+      virtualControllerPuckBackground
+    )
+    joystick.dispose()
+  })
+
   it('captures an in-circle drag anywhere until release', () => {
     const { fakeTexture, texture } = createHarness()
     const onInput = vi.fn()

@@ -10,7 +10,11 @@ import {
 } from '@babylonjs/core'
 import type { ArcRotateCameraPointersInput } from
   '@babylonjs/core/Cameras/Inputs/arcRotateCameraPointersInput'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import {
+  createGameplayActions,
+  type GameplayActionDefinition
+} from '../../client/scripts/gameplayActions'
 import {
   RuntimeInputController,
   blockPrimaryMouseCameraInput,
@@ -32,7 +36,9 @@ type Harness = {
 
 const harnesses: Harness[] = []
 
-function createHarness(): Harness {
+function createHarness(
+  actions: readonly GameplayActionDefinition[] = []
+): Harness {
   const engine = new NullEngine()
   const scene = new Scene(engine)
   const player = MeshBuilder.CreateBox('Player', { size: 1 }, scene)
@@ -48,7 +54,8 @@ function createHarness(): Harness {
   const controller = new RuntimeInputController(
     player,
     camera,
-    target
+    target,
+    actions
   )
   const harness = {
     camera,
@@ -634,6 +641,56 @@ describe('runtime camera input', () => {
 })
 
 describe('runtime input lifecycle and camera configuration', () => {
+  it('routes C and V through shared actions once per key press', () => {
+    const onJump = vi.fn()
+    const onShoot = vi.fn()
+    const actions = createGameplayActions({
+      onJump,
+      onShoot
+    })
+    const { controller, target } = createHarness(actions)
+
+    dispatchKey(target, 'keydown', 'KeyC')
+    dispatchKey(target, 'keydown', 'KeyC')
+    dispatchKey(target, 'keydown', 'KeyV')
+
+    expect(onJump).toHaveBeenCalledOnce()
+    expect(onShoot).toHaveBeenCalledOnce()
+
+    dispatchKey(target, 'keyup', 'KeyC')
+    dispatchKey(target, 'keydown', 'KeyC')
+    expect(onJump).toHaveBeenCalledTimes(2)
+
+    actions[0].onPressed()
+    expect(onJump).toHaveBeenCalledTimes(3)
+    expect(controller.isEnabled).toBe(true)
+  })
+
+  it('blocks actions while disabled and clears held actions on blur', () => {
+    const onJump = vi.fn()
+    const actions = createGameplayActions({
+      onJump,
+      onShoot: vi.fn()
+    })
+    const { controller, target } = createHarness(actions)
+
+    controller.setEnabled(false)
+    dispatchKey(target, 'keydown', 'KeyC')
+    expect(onJump).not.toHaveBeenCalled()
+
+    controller.setEnabled(true)
+    dispatchKey(target, 'keydown', 'KeyC')
+    expect(onJump).toHaveBeenCalledOnce()
+    target.dispatchEvent(new Event('blur'))
+    dispatchKey(target, 'keydown', 'KeyC')
+    expect(onJump).toHaveBeenCalledTimes(2)
+
+    controller.dispose()
+    dispatchKey(target, 'keyup', 'KeyC')
+    dispatchKey(target, 'keydown', 'KeyC')
+    expect(onJump).toHaveBeenCalledTimes(2)
+  })
+
   it('disables held, pending, and future gameplay motion', () => {
     const { camera, controller, player, target } = createHarness()
     dispatchKey(target, 'keydown', 'KeyW')
@@ -762,7 +819,8 @@ describe('runtime input lifecycle and camera configuration', () => {
     expect(runtimeInputLabels).toEqual([
       'WASD = Move Player',
       'F = Fullscreen',
-      'C = Create Orbiter'
+      'C = Jump',
+      'V = Shoot'
     ])
   })
 })

@@ -5,6 +5,10 @@ import {
 } from '@babylonjs/core'
 import type { ArcRotateCameraPointersInput } from
   '@babylonjs/core/Cameras/Inputs/arcRotateCameraPointersInput'
+import {
+  gameplayActionInputLabels,
+  type GameplayActionDefinition
+} from './gameplayActions'
 
 type MotionTuning = {
   baseSpeed: number
@@ -43,11 +47,6 @@ const cameraKeyCodes = new Set([
   'KeyL'
 ])
 
-const gameplayKeyCodes = new Set([
-  ...playerKeyCodes,
-  ...cameraKeyCodes
-])
-
 export const playerMotionTuning: Readonly<MotionTuning> = {
   baseSpeed: 3,
   maxSpeed: 5.85,
@@ -67,7 +66,7 @@ export const cameraMotionTuning: Readonly<MotionTuning> = {
 export const runtimeInputLabels = [
   'WASD = Move Player',
   'F = Fullscreen',
-  'C = Create Orbiter'
+  ...gameplayActionInputLabels
 ]
 
 function getPlayerDirection(keys: Set<string>) {
@@ -242,6 +241,10 @@ export class RuntimeInputController {
   private readonly lastPlayerDirection = Vector2.Zero()
   private readonly lastCameraDirection = Vector2.Zero()
   private readonly analogPlayerInput = Vector2.Zero()
+  private readonly actionsByKeyCode: ReadonlyMap<
+    string,
+    GameplayActionDefinition
+  >
   private currentPlayerSpeed = 0
   private currentCameraSpeed = 0
   private enabled = true
@@ -250,8 +253,12 @@ export class RuntimeInputController {
   public constructor(
     private readonly player: TransformNode,
     private readonly camera: ArcRotateCamera,
-    private readonly eventTarget: EventTarget
+    private readonly eventTarget: EventTarget,
+    actions: readonly GameplayActionDefinition[] = []
   ) {
+    this.actionsByKeyCode = new Map(
+      actions.map(action => [action.keyCode, action])
+    )
     eventTarget.addEventListener('keydown', this.handleKeyDown)
     eventTarget.addEventListener('keyup', this.handleKeyUp)
     eventTarget.addEventListener('blur', this.handleBlur)
@@ -322,8 +329,11 @@ export class RuntimeInputController {
 
   private readonly handleKeyDown = (event: Event) => {
     const keyboardEvent = event as KeyboardEvent
+    const action = this.actionsByKeyCode.get(keyboardEvent.code)
+    const isMotionKey = playerKeyCodes.has(keyboardEvent.code) ||
+      cameraKeyCodes.has(keyboardEvent.code)
 
-    if (!gameplayKeyCodes.has(keyboardEvent.code)) {
+    if (!isMotionKey && !action) {
       return
     }
 
@@ -333,17 +343,26 @@ export class RuntimeInputController {
       return
     }
 
-    if (!this.heldKeys.has(keyboardEvent.code)) {
+    const isFirstPress = !this.heldKeys.has(keyboardEvent.code)
+
+    if (isFirstPress) {
       this.pendingKeys.add(keyboardEvent.code)
     }
 
     this.heldKeys.add(keyboardEvent.code)
+
+    if (isFirstPress) {
+      action?.onPressed()
+    }
   }
 
   private readonly handleKeyUp = (event: Event) => {
     const keyboardEvent = event as KeyboardEvent
+    const isActionKey = this.actionsByKeyCode.has(keyboardEvent.code)
+    const isMotionKey = playerKeyCodes.has(keyboardEvent.code) ||
+      cameraKeyCodes.has(keyboardEvent.code)
 
-    if (!gameplayKeyCodes.has(keyboardEvent.code)) {
+    if (!isMotionKey && !isActionKey) {
       return
     }
 

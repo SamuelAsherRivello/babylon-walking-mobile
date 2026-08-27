@@ -1,3 +1,8 @@
+import {
+  createGameViewportSnapshot,
+  type GameViewportSnapshot
+} from './gameViewport'
+
 export type ProductionUiCanvasRect = {
   height: number
   left: number
@@ -7,10 +12,12 @@ export type ProductionUiCanvasRect = {
 
 export type ProductionUiViewport = {
   height: number
+  left?: number
   safeAreaBottom: number
   safeAreaLeft: number
   safeAreaRight: number
   safeAreaTop: number
+  top?: number
   width: number
 }
 
@@ -44,16 +51,20 @@ export function calculateProductionUiLayout(
     : 1
   const canvasRight = canvas.left + canvas.width
   const canvasBottom = canvas.top + canvas.height
-  const viewportRight = viewport.width - viewport.safeAreaRight
-  const viewportBottom = viewport.height - viewport.safeAreaBottom
+  const viewportLeft = (viewport.left ?? 0) + viewport.safeAreaLeft
+  const viewportTop = (viewport.top ?? 0) + viewport.safeAreaTop
+  const viewportRight = (viewport.left ?? 0) + viewport.width -
+    viewport.safeAreaRight
+  const viewportBottom = (viewport.top ?? 0) + viewport.height -
+    viewport.safeAreaBottom
   const left = Math.max(
     0,
-    viewport.safeAreaLeft - canvas.left
+    viewportLeft - canvas.left
   ) * scale
   const right = Math.max(0, canvasRight - viewportRight) * scale
   const top = Math.max(
     0,
-    viewport.safeAreaTop - canvas.top
+    viewportTop - canvas.top
   ) * scale
   const bottom = Math.max(0, canvasBottom - viewportBottom) * scale
   const canvasWidth = Math.max(0, canvas.width * scale)
@@ -74,24 +85,29 @@ export function calculateProductionUiLayout(
 
 export function readProductionUiViewport(
   root: Element
-): ProductionUiViewport {
+): GameViewportSnapshot {
   const style = getComputedStyle(root)
   const visualViewport = window.visualViewport
 
-  return {
-    height: visualViewport?.height ?? window.innerHeight,
-    safeAreaBottom: readPixels(
-      style.getPropertyValue('--safe-area-inset-bottom')
-    ),
-    safeAreaLeft: readPixels(
-      style.getPropertyValue('--safe-area-inset-left')
-    ),
-    safeAreaRight: readPixels(
-      style.getPropertyValue('--safe-area-inset-right')
-    ),
-    safeAreaTop: readPixels(
-      style.getPropertyValue('--safe-area-inset-top')
-    ),
-    width: visualViewport?.width ?? window.innerWidth
-  }
+  return createGameViewportSnapshot(
+    {
+      innerHeight: window.innerHeight,
+      innerWidth: window.innerWidth,
+      visualViewport
+    },
+    {
+      bottom: readPixels(
+        style.getPropertyValue('--safe-area-inset-bottom')
+      ),
+      left: readPixels(
+        style.getPropertyValue('--safe-area-inset-left')
+      ),
+      right: readPixels(
+        style.getPropertyValue('--safe-area-inset-right')
+      ),
+      top: readPixels(
+        style.getPropertyValue('--safe-area-inset-top')
+      )
+    }
+  )
 }

@@ -12,6 +12,11 @@ const readClientSource = () => readFileSync(
   'utf8'
 )
 
+const readPage = () => readFileSync(
+  resolve('index.html'),
+  'utf8'
+)
+
 describe('portrait game viewport', () => {
   it('uses a centered, full-height 9:16 frame that cannot shrink', () => {
     const styles = readStyles()
@@ -61,5 +66,28 @@ describe('portrait game viewport', () => {
       'const resizeObserver = new ResizeObserver(handleResize)'
     )
     expect(source).toContain('resizeObserver.observe(canvas)')
+  })
+
+  it('extends mobile content into drawable display cutouts', () => {
+    const page = readPage()
+
+    expect(page).toContain('viewport-fit=cover')
+  })
+
+  it('tracks and disposes visual-viewport changes', () => {
+    const source = readClientSource()
+
+    expect(source).toContain(
+      "visualViewport?.addEventListener('resize', handleResize)"
+    )
+    expect(source).toContain(
+      "visualViewport?.addEventListener('scroll', handleResize)"
+    )
+    expect(source).toContain(
+      "visualViewport?.removeEventListener('resize', handleResize)"
+    )
+    expect(source).toContain(
+      "visualViewport?.removeEventListener('scroll', handleResize)"
+    )
   })
 })

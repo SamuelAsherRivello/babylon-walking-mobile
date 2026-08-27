@@ -7,7 +7,6 @@ type InputActions = {
   onFullscreen?: () => Promise<void> | void
   onHud?: () => void
   onInspector?: (inspectorOpen: boolean) => void
-  onOrbiter?: () => void
   onAntialiasing?: () => void
   onUpscaling?: () => void
   onFramerate?: () => void
@@ -83,9 +82,6 @@ export function addInput(
       actions.onRestart?.()
     }
 
-    if (shortcut === 'c') {
-      actions.onOrbiter?.()
-    }
   })
 
   if (import.meta.env.MODE === 'development') {

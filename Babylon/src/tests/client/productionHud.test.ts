@@ -97,14 +97,14 @@ describe('production HUD', () => {
     )
   })
 
-  it('owns one movement joystick on its shared texture', () => {
+  it('owns one complete virtual controller on its shared texture', () => {
     const source = readProductionHud()
 
-    expect(source).toContain('public addMovementJoystick(')
-    expect(source).toContain('new VirtualMovementJoystick(')
+    expect(source).toContain('public addVirtualController(')
+    expect(source).toContain('new VirtualController(')
     expect(source).toContain('this.texture')
-    expect(source).toContain('this.movementJoystick?.dispose()')
-    expect(source.indexOf('this.movementJoystick?.dispose()'))
+    expect(source).toContain('this.virtualController?.dispose()')
+    expect(source.indexOf('this.virtualController?.dispose()'))
       .toBeLessThan(source.indexOf('this.texture.dispose()'))
   })
 
@@ -130,16 +130,16 @@ describe('production HUD', () => {
     expect(source).not.toContain('getRenderWidth')
     expect(source).not.toContain('HORIZONTAL_ALIGNMENT_RIGHT')
     expect(source).not.toContain('leftInPixels = -UI_PADDING')
-    expect(leftGroup).toContain(
-      "createText('Score', 'Score: 000', LABEL_HEIGHT, 32)"
-    )
+    expect(leftGroup).toContain("'Score: 000'")
+    expect(leftGroup).toContain('PRODUCTION_LABEL_HEIGHT')
+    expect(leftGroup).toContain('PRODUCTION_LABEL_FONT_SIZE')
     expect(titleIndex).toBeGreaterThan(-1)
     expect(scoreIndex).toBeGreaterThan(titleIndex)
     expect(labelIndex).toBeGreaterThan(scoreIndex)
     expect(slotsIndex).toBeGreaterThan(labelIndex)
   })
 
-  it('applies one visible layout to the HUD, prompt, and joystick', () => {
+  it('applies one visible layout to the HUD, prompt, and controller', () => {
     const source = readProductionHud()
 
     expect(source).toContain('private readonly leftGroup: StackPanel')
@@ -153,6 +153,15 @@ describe('production HUD', () => {
     )
     expect(source).toContain('this.prompt.leftInPixels = layout.centerX')
     expect(source).toContain('this.prompt.topInPixels = layout.centerY')
-    expect(source).toContain('this.movementJoystick?.updateLayout(layout)')
+    expect(source).toContain('this.virtualController?.updateLayout(layout)')
+  })
+
+  it('uses the shared production text style for the score', () => {
+    const source = readProductionHud()
+
+    expect(source).toContain("from './productionTextStyle'")
+    expect(source).toContain('PRODUCTION_LABEL_FONT_SIZE')
+    expect(source).toContain('PRODUCTION_LABEL_HEIGHT')
+    expect(source).toContain('applyProductionTextStyle(')
   })
 })

@@ -20,18 +20,24 @@ import {
   type ProductionUiLayout,
   type ProductionUiViewport
 } from './productionHudLayout'
-import { VirtualMovementJoystick } from './virtualMovementJoystick'
+import {
+  PRODUCTION_LABEL_FONT_SIZE,
+  PRODUCTION_LABEL_HEIGHT,
+  PRODUCTION_TEXT_COLOR,
+  applyProductionTextStyle
+} from './productionTextStyle'
+import {
+  VirtualController,
+  type VirtualControllerOptions
+} from './virtualController'
 
 export const UI_PADDING = 50
 
 const UI_IDEAL_HEIGHT = 1600
-const TEXT_COLOR = '#fff7dc'
-const TEXT_OUTLINE_COLOR = '#261b17'
 const SLOT_BACKGROUND = 'rgba(25, 20, 22, 0.82)'
 const SLOT_BORDER = '#d8b575'
 const LEFT_GROUP_WIDTH = 650
 const TITLE_HEIGHT = 58
-const LABEL_HEIGHT = 48
 const SLOT_SIZE = 82
 const SLOT_GAP = 10
 const PROMPT_WIDTH = 540
@@ -55,17 +61,10 @@ function createText(
   fontSize: number
 ) {
   const control = new TextBlock(name, text)
-  control.heightInPixels = height
-  control.color = TEXT_COLOR
-  control.fontFamily = 'Arial, sans-serif'
-  control.fontSizeInPixels = fontSize
-  control.fontWeight = '700'
-  control.outlineColor = TEXT_OUTLINE_COLOR
-  control.outlineWidth = 4
-  control.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT
-  control.isHitTestVisible = false
-
-  return control
+  return applyProductionTextStyle(control, {
+    fontSize,
+    height
+  })
 }
 
 function createSlot(index: number) {
@@ -91,7 +90,7 @@ export class ProductionHud {
   private readonly promptTitle: TextBlock
   private readonly promptBody: TextBlock
   private readonly promptButtons: StackPanel
-  private movementJoystick?: VirtualMovementJoystick
+  private virtualController?: VirtualController
   private layout?: ProductionUiLayout
 
   public constructor(scene: Scene, title: string, slotCount = 5) {
@@ -183,7 +182,7 @@ export class ProductionHud {
       button.heightInPixels = 64
       button.paddingLeftInPixels = 8
       button.paddingRightInPixels = 8
-      button.color = TEXT_COLOR
+      button.color = PRODUCTION_TEXT_COLOR
       button.background = SLOT_BACKGROUND
       button.fontSizeInPixels = 32
       button.cornerRadius = 10
@@ -201,21 +200,19 @@ export class ProductionHud {
     this.prompt.isVisible = false
   }
 
-  public addMovementJoystick(
-    onInput: ConstructorParameters<
-      typeof VirtualMovementJoystick
-    >[1]
-  ) {
-    this.movementJoystick?.dispose()
-    this.movementJoystick = new VirtualMovementJoystick(
+  public addVirtualController(
+    options: VirtualControllerOptions
+  ): VirtualController {
+    this.virtualController?.dispose()
+    this.virtualController = new VirtualController(
       this.texture,
-      onInput
+      options
     )
     if (this.layout) {
-      this.movementJoystick.updateLayout(this.layout)
+      this.virtualController.updateLayout(this.layout)
     }
 
-    return this.movementJoystick
+    return this.virtualController
   }
 
   public updateLayout(
@@ -244,11 +241,11 @@ export class ProductionHud {
       PROMPT_HEIGHT,
       Math.max(0, layout.visibleHeight - UI_PADDING * 2)
     )
-    this.movementJoystick?.updateLayout(layout)
+    this.virtualController?.updateLayout(layout)
   }
 
   public dispose() {
-    this.movementJoystick?.dispose()
+    this.virtualController?.dispose()
     this.texture.dispose()
   }
 
@@ -262,12 +259,17 @@ export class ProductionHud {
     leftGroup.isHitTestVisible = false
 
     const titleText = createText('GameTitle', title, TITLE_HEIGHT, 40)
-    const scoreText = createText('Score', 'Score: 000', LABEL_HEIGHT, 32)
+    const scoreText = createText(
+      'Score',
+      'Score: 000',
+      PRODUCTION_LABEL_HEIGHT,
+      PRODUCTION_LABEL_FONT_SIZE
+    )
     const inventoryLabel = createText(
       'InventoryLabel',
       'Inventory:',
-      LABEL_HEIGHT,
-      32
+      PRODUCTION_LABEL_HEIGHT,
+      PRODUCTION_LABEL_FONT_SIZE
     )
     leftGroup.addControl(titleText)
     leftGroup.addControl(scoreText)

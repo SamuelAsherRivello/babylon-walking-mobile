@@ -100,4 +100,20 @@ describe('addInput canvas click', () => {
     expect(actions.onResetDefaults).toHaveBeenCalledOnce()
     expect(actions.onRestart).toHaveBeenCalledOnce()
   })
+
+  it('does not own C or V gameplay action shortcuts', () => {
+    const canvas = new FakeCanvas()
+    const windowTarget = new EventTarget()
+    const onOrbiter = vi.fn()
+    vi.stubGlobal('window', windowTarget)
+
+    const actions = {
+      onOrbiter
+    } as unknown as Parameters<typeof addInput>[2]
+    addInput(canvas as unknown as HTMLCanvasElement, {} as Scene, actions)
+    keydown(windowTarget, 'c', 'KeyC')
+    keydown(windowTarget, 'v', 'KeyV')
+
+    expect(onOrbiter).not.toHaveBeenCalled()
+  })
 })
