@@ -18,6 +18,9 @@ WebGPU on PC and Mobile.
 
 https://samuelasherrivello.github.io/babylon-walking-mobile/latest/
 
+The live link always opens the newest published release. Immutable builds are
+available under `/releases/<version>/` for replaying a specific version.
+
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 
 ## Table of Contents
@@ -103,9 +106,9 @@ current specifications aligned.
 | --- | --- | --- | --- |
 | 1 | Explore | `/opsx:explore` | Optional feature discovery and planning. |
 | 2 | Propose | `/opsx:propose <name>` | Creates one focused feature change. |
-| 3 | Apply | `/opsx:apply <name>` | Implements the change and completes its tasks. |
-| 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving the change. |
-| 5 | Archive | `/opsx:archive <name>` | Finalizes specs and archives the completed change. |
+| 3 | Apply | `/opsx:apply <name>` | Implements and completes one change. |
+| 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving. |
+| 5 | Archive | `/opsx:archive <name>` | Finalizes and archives a change. |
 
 ## Troubleshooting
 
