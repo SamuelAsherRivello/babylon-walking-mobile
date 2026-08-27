@@ -4,7 +4,7 @@ AI reading guide:
 - Read the page from demo, to setup, to internals, to support.
 - Keep commands consistent with Babylon/package.json.
 - Keep authored lines at 80 characters or fewer.
-- Do not restore removed release-history wording under Live Demo.
+- Keep the stable and versioned release routes documented under Live Demo.
 -->
 
 # Babylon Walking Mobile
@@ -32,6 +32,9 @@ WebGPU on PC and Mobile.
 ## Live Demo
 
 https://samuelasherrivello.github.io/babylon-walking-mobile/latest/
+
+The live link always opens the newest published release. Immutable builds are
+available under `/releases/<version>/` for replaying a specific version.
 
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 
