@@ -15,7 +15,7 @@ describe('debug reset input', () => {
 
     expect(resetBlock).toContain('resetDebugPreferences(storage)')
     expect(resetBlock).toContain('debugPreferenceDefaults')
-    expect(resetBlock).toContain('ui.setShortcuts')
+    expect(resetBlock).toContain('debugHud.setShortcuts')
     expect(resetBlock).not.toContain('window.location.reload()')
   })
 })

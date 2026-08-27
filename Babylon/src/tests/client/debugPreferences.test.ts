@@ -4,6 +4,8 @@ import {
   getDebugInputLabels,
   readDebugPreferences,
   resetDebugPreferences,
+  setMobileModePreference,
+  toggleDebugHudPreference,
   writeDebugPreferences
 } from '../../client/scripts/debugPreferences'
 
@@ -48,7 +50,8 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
-      targetFramerateIndex: 2
+      targetFramerateIndex: 2,
+      mobileModeEnabled: true
     }
 
     writeDebugPreferences(storage, preferences)
@@ -69,7 +72,8 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
-      targetFramerateIndex: 2
+      targetFramerateIndex: 2,
+      mobileModeEnabled: true
     })
 
     resetDebugPreferences(storage)
@@ -82,7 +86,8 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
-      targetFramerateIndex: 2
+      targetFramerateIndex: 2,
+      mobileModeEnabled: true
     })
 
     expect(getDebugInputLabels(debugPreferenceDefaults)).toEqual([
@@ -91,7 +96,9 @@ describe('debugPreferences', () => {
       '3 = Toggle Antialias',
       '4 = Toggle FPS',
       '5 = Reset to Defaults (Disk)',
-      '6 = Restart Scene'
+      '6 = Restart Scene',
+      '3 Finger Tap = Tog. Mobile Mode',
+      'IJKL = Move Camera'
     ])
     expect(labels).toEqual([
       '1 = Toggle HUD *',
@@ -99,7 +106,49 @@ describe('debugPreferences', () => {
       '3 = Toggle Antialias *',
       '4 = Toggle FPS *',
       '5 = Reset to Defaults (Disk)',
-      '6 = Restart Scene'
+      '6 = Restart Scene',
+      '3 Finger Tap = Tog. Mobile Mode',
+      'IJKL = Move Camera'
     ])
+  })
+
+  it('persists visibility through the shared HUD toggle path', () => {
+    const storage = new MemoryStorage()
+    const preferences = { ...debugPreferenceDefaults }
+
+    expect(toggleDebugHudPreference(
+      preferences,
+      storage,
+      () => false
+    )).toBe(false)
+    expect(readDebugPreferences(storage).hudVisible).toBe(false)
+
+    expect(toggleDebugHudPreference(
+      preferences,
+      storage,
+      () => true
+    )).toBe(true)
+    expect(readDebugPreferences(storage).hudVisible).toBe(true)
+  })
+
+  it('persists the mobile-mode on and normal-default profiles', () => {
+    const storage = new MemoryStorage()
+    const preferences = { ...debugPreferenceDefaults }
+
+    setMobileModePreference(preferences, storage, true)
+    expect(preferences).toEqual({
+      hudVisible: false,
+      inspectorOpen: false,
+      antialias: false,
+      targetFramerateIndex: 1,
+      mobileModeEnabled: true
+    })
+    expect(readDebugPreferences(storage)).toEqual(preferences)
+
+    setMobileModePreference(preferences, storage, false)
+    expect(preferences).toEqual(debugPreferenceDefaults)
+    expect(readDebugPreferences(storage)).toEqual(
+      debugPreferenceDefaults
+    )
   })
 })

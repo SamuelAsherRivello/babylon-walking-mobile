@@ -3,13 +3,15 @@ export type DebugPreferences = {
   inspectorOpen: boolean
   antialias: boolean
   targetFramerateIndex: number
+  mobileModeEnabled: boolean
 }
 
 export const debugPreferenceDefaults: DebugPreferences = {
   hudVisible: true,
   inspectorOpen: false,
   antialias: true,
-  targetFramerateIndex: 1
+  targetFramerateIndex: 1,
+  mobileModeEnabled: false
 }
 
 const debugPreferenceKey = 'babylon.debugPreferences.v1'
@@ -34,7 +36,9 @@ export function getDebugInputLabels(preferences: DebugPreferences) {
         debugPreferenceDefaults.targetFramerateIndex
     )}`,
     '5 = Reset to Defaults (Disk)',
-    '6 = Restart Scene'
+    '6 = Restart Scene',
+    '3 Finger Tap = Tog. Mobile Mode',
+    'IJKL = Move Camera'
   ]
 }
 
@@ -53,7 +57,11 @@ function isValidPreference(value: unknown): value is DebugPreferences {
     typeof targetFramerateIndex === 'number' &&
     Number.isInteger(targetFramerateIndex) &&
     targetFramerateIndex >= 0 &&
-    targetFramerateIndex <= 2
+    targetFramerateIndex <= 2 &&
+    (
+      preference.mobileModeEnabled === undefined ||
+      typeof preference.mobileModeEnabled === 'boolean'
+    )
   )
 }
 
@@ -77,7 +85,10 @@ export function readDebugPreferences(
       return { ...debugPreferenceDefaults }
     }
 
-    return parsedValue
+    return {
+      ...parsedValue,
+      mobileModeEnabled: parsedValue.mobileModeEnabled ?? false
+    }
   } catch {
     return { ...debugPreferenceDefaults }
   }
@@ -97,6 +108,33 @@ export function writeDebugPreferences(
     // Storage can fail in restricted browser contexts. The app should keep
     // running with in-memory state if persistence is unavailable.
   }
+}
+
+export function toggleDebugHudPreference(
+  preferences: DebugPreferences,
+  storage: Storage | undefined,
+  toggle: () => boolean
+) {
+  preferences.hudVisible = toggle()
+  writeDebugPreferences(storage, preferences)
+
+  return preferences.hudVisible
+}
+
+export function setMobileModePreference(
+  preferences: DebugPreferences,
+  storage: Storage | undefined,
+  enabled: boolean
+) {
+  Object.assign(preferences, debugPreferenceDefaults)
+
+  if (enabled) {
+    preferences.hudVisible = false
+    preferences.antialias = false
+    preferences.mobileModeEnabled = true
+  }
+
+  writeDebugPreferences(storage, preferences)
 }
 
 export function resetDebugPreferences(storage: Storage | undefined) {

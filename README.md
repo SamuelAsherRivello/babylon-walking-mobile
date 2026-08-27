@@ -31,6 +31,7 @@ published. Versioned releases live under `/releases/<version>/`, and
 5. [Project Details](#project-details)
 6. [Resources](#resources)
 7. [Credits](#credits)
+8. [OpenSpec](#openspec)
 
 ## Getting Started
 
@@ -49,6 +50,19 @@ published. Versioned releases live under `/releases/<version>/`, and
 - `npm start`: Run the app locally with hot reload.
 - `npm run check`: Check TypeScript.
 - `npm run run_unit_tests`: Run unit tests.
+
+## OpenSpec
+
+[OpenSpec](https://openspec.dev/) keeps feature intent, implementation, and
+current specifications aligned.
+
+| # | Name | Command | Comment |
+| --- | --- | --- | --- |
+| 1 | Explore | `/opsx:explore` | Optional feature discovery and planning. |
+| 2 | Propose | `/opsx:propose <name>` | Creates one focused feature change. |
+| 3 | Apply | `/opsx:apply <name>` | Implements the change and completes its tasks. |
+| 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving the change. |
+| 5 | Archive | `/opsx:archive <name>` | Finalizes specs and archives the completed change. |
 
 ## Release Deployment
 

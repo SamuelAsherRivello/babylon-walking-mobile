@@ -19,7 +19,7 @@ describe('physics frame-rate independence', () => {
     )
     const physicsStepIndex = source.indexOf('advancePhysics(now)')
     const renderThrottleIndex = source.indexOf(
-      'if (now - lastRenderTime < targetFrameMs)'
+      'if (!renderScheduler.shouldRender(now))'
     )
 
     expect(source).toContain('scene.physicsEnabled = false')
@@ -37,7 +37,7 @@ describe('physics frame-rate independence', () => {
     )
     const orbiterUpdateIndex = source.indexOf('updateOrbiters(deltaSeconds)')
     const renderThrottleIndex = source.indexOf(
-      'if (now - lastRenderTime < targetFrameMs)'
+      'if (!renderScheduler.shouldRender(now))'
     )
 
     expect(source).not.toContain('scene.onBeforeRenderObservable.add')
@@ -45,5 +45,38 @@ describe('physics frame-rate independence', () => {
     expect(orbiterUpdateIndex).toBeGreaterThan(-1)
     expect(renderThrottleIndex).toBeGreaterThan(-1)
     expect(orbiterUpdateIndex).toBeLessThan(renderThrottleIndex)
+  })
+
+  it('updates input and zones before any render-fps throttle', () => {
+    const source = readFileSync(
+      resolve('src/client/scripts/index.ts'),
+      'utf8'
+    )
+    const inputUpdateIndex = source.indexOf(
+      'runtimeInput.update(inputDeltaSeconds)'
+    )
+    const zoneUpdateIndex = source.indexOf(
+      'zone.update(prototype.player.position)'
+    )
+    const renderThrottleIndex = source.indexOf(
+      'if (!renderScheduler.shouldRender(now))'
+    )
+
+    expect(inputUpdateIndex).toBeGreaterThan(-1)
+    expect(zoneUpdateIndex).toBeGreaterThan(-1)
+    expect(renderThrottleIndex).toBeGreaterThan(-1)
+    expect(inputUpdateIndex).toBeLessThan(renderThrottleIndex)
+    expect(zoneUpdateIndex).toBeLessThan(renderThrottleIndex)
+  })
+
+  it('bounds catch-up work after a long pause', () => {
+    const source = readFileSync(
+      resolve('src/client/scripts/index.ts'),
+      'utf8'
+    )
+
+    expect(source).toContain('const maximumPhysicsSteps = 5')
+    expect(source).toContain('physicsAccumulatorMs = Math.min(')
+    expect(source).toContain('physicsSteps < maximumPhysicsSteps')
   })
 })

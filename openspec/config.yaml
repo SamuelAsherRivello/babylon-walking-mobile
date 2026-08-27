@@ -1,0 +1,74 @@
+schema: spec-driven
+
+context: |
+  This is a browser game built with strict TypeScript, Vite, and Babylon.js.
+
+  Game structure:
+  - The game has levels.
+  - Each level has one or more quests.
+  - The player controls a player character through gameplay input.
+
+  World orientation:
+  - The ground plane uses the world X and Z axes. The Y axis represents
+    vertical height.
+  - Right means increasing world X, and left means decreasing world X.
+  - Up means increasing world Z, and down means decreasing world Z.
+  - Unless a requirement explicitly says otherwise, directional gameplay
+    language refers to these fixed world axes, not to the current camera view.
+  - Player input must preserve this mapping: right moves toward positive X,
+    left toward negative X, up toward positive Z, and down toward negative Z.
+  - Camera position, camera orbit, and camera rotation must not silently remap
+    world-relative player input.
+  - Camera direction, light direction, shadow direction, and a rendered
+    object's local facing direction are separate coordinate concerns. A change
+    to one must not imply a change to another without an explicit requirement.
+
+  Runtime targets:
+  - Target current Chrome, Edge, Firefox, Safari, Android Chrome, and iOS
+    Safari.
+  - Prefer Babylon.js WebGPU. Fall back gracefully to Babylon.js WebGL when
+    WebGPU is unavailable or initialization fails.
+  - Support desktop browsers and portrait-oriented mobile browsers.
+  - Mobile interactions must use touch controls and must not require hover.
+  - Keep the canvas and UI correct when the browser viewport resizes.
+
+  Toolset guardrails:
+  - Use the dependencies already declared in Babylon/package.json.
+  - The approved runtime toolset is Babylon.js core, GUI, Havok, Inspector,
+    loaders, materials, post-processes, procedural textures, and serializers.
+  - The approved development toolset is TypeScript, Vite, Vitest, ESLint,
+    vite-plugin-static-copy, and the Babylon.js Editor CLI.
+  - Do not add a package, framework, UI library, renderer, or build tool unless
+    its OpenSpec proposal explains why the approved toolset is insufficient
+    and the user explicitly approves the dependency.
+
+  TypeScript guardrails:
+  - New authored TypeScript files must honor the lightweight conventions in
+    Babylon/src/client/scripts/templates/classTemplate.ts.
+  - Use ES modules, strict types, focused modules, named Babylon.js imports,
+    type-only imports where appropriate, and explicit return types on exported
+    functions and methods.
+  - Avoid `any`, unnecessary abstractions, broad namespace imports, and
+    speculative framework layers.
+  - Own and dispose Babylon.js resources created by a module or class.
+  - Keep authored code at 80 characters per line or less.
+  - Do not manually wrap or reformat generated files unless requested.
+
+rules:
+  proposal:
+    - State effects on desktop, portrait mobile, WebGPU, and WebGL fallback.
+    - Justify any proposed dependency outside the approved toolset.
+  design:
+    - Describe touch behavior and viewport-resize behavior when affected.
+    - Identify ownership and disposal of new Babylon.js resources.
+  specs:
+    - Include browser-visible acceptance scenarios for affected behavior.
+  tasks:
+    - Include TypeScript checks, tests, and real-browser verification.
+
+operations:
+  apply:
+    guidance:
+      - Preserve WebGPU-first startup and the working WebGL fallback.
+      - Verify affected behavior on desktop and portrait mobile viewports.
+      - Follow the referenced lightweight TypeScript template for new files.

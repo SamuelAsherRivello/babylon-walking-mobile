@@ -2,25 +2,48 @@
 import * as BABYLON from '@babylonjs/core'
 import '@babylonjs/loaders/glTF'
 import '../styles/index.css'
-import { adjustLighting } from './adjustLighting'
 import { addInput } from './addInput'
 import { AddOrbiter } from './addOrbiter'
-import { addPhysicsImposter, initPhysics } from './addPhysics'
 import { addPostProcess } from './addPostProcess'
-import { addUI } from './addUI'
+import { DebugHud } from './debugHud'
 import {
   debugPreferenceDefaults,
   getDebugInputLabels,
   readDebugPreferences,
   resetDebugPreferences,
+  setMobileModePreference,
+  toggleDebugHudPreference,
   writeDebugPreferences
 } from './debugPreferences'
 import { BabylonConfigurationModel } from './model/babylonConfigurationModel'
+import {
+  LevelProgression,
+  createGameWorld,
+  levelDefinitions
+} from './level'
 import { OrbiterModel } from './model/orbiterModel'
-import { PhysicsData } from './model/physicsModel'
 import { Orbiter } from './orbiter'
-import { playSound } from './playSound'
+import { ProductionHud } from './productionHud'
+import {
+  createInventorySlots,
+  formatHudTitle
+} from './productionHudModel'
+import { createPrototypeCamera } from './prototypeScene'
+import { RenderScheduler } from './renderScheduler'
+import { createRenderingEngine } from './renderingEngineFactory'
+import {
+  RuntimeInputController,
+  configureRuntimeCamera,
+  runtimeInputLabels
+} from './runtimeInput'
+import { SoundManager } from './soundManager'
+import { ThreeFingerTapController } from './threeFingerTap'
 import { Tweens } from './tweens'
+import { readJoystickViewport } from './virtualMovementJoystick'
+
+const backgroundMusicEnabled = false
+const backgroundMusicVolume = 0.15
+const clickSoundVolume = 0.35
 
 async function main() {
   const showLoader = false
@@ -51,7 +74,6 @@ async function main() {
   uiContainer.style.bottom = '0'
   uiContainer.style.zIndex = '1001'
   uiContainer.style.pointerEvents = 'none'
-  canvas.style.position = 'relative'
   canvas.appendChild(uiContainer)
 
   function adjustUIForInspector() {
@@ -94,7 +116,7 @@ async function main() {
 
   let engine: BABYLON.Engine | BABYLON.WebGPUEngine
   let scene: BABYLON.Scene
-  let ui: ReturnType<typeof addUI>
+  let debugHud: DebugHud
   let AddOrbiterClass = AddOrbiter
   const orbiters: Orbiter[] = []
   const origin = BABYLON.Vector3.Zero()
@@ -107,56 +129,59 @@ async function main() {
   configuration.antialias = debugPreferences.antialias
   let targetFramerateIndex = debugPreferences.targetFramerateIndex
   let targetFramerate = targetFramerates[targetFramerateIndex]
+  const renderScheduler = new RenderScheduler(targetFramerate)
   const saveDebugPreferences = () => {
     writeDebugPreferences(storage, debugPreferences)
-    ui.setShortcuts(getDebugInputLabels(debugPreferences))
+    debugHud.setShortcuts(getDebugInputLabels(debugPreferences))
+  }
+  const toggleDebugHud = () => {
+    toggleDebugHudPreference(
+      debugPreferences,
+      storage,
+      () => debugHud.toggle()
+    )
+    debugHud.setShortcuts(getDebugInputLabels(debugPreferences))
   }
   const debugInputLabels = getDebugInputLabels(debugPreferences)
 
-  if (navigator.gpu) {
-    engine = new BABYLON.WebGPUEngine(canvas, {
+  const engineResult = await createRenderingEngine<
+    BABYLON.Engine | BABYLON.WebGPUEngine,
+    BABYLON.WebGPUEngine
+  >(navigator.gpu !== undefined, {
+    createWebGPU: () => new BABYLON.WebGPUEngine(canvas, {
       antialias: configuration.antialias,
       adaptToDeviceRatio: configuration.adaptToDeviceRatio,
       powerPreference: configuration.powerPreference
-    })
-    await engine.initAsync()
-    scene = new BABYLON.Scene(engine)
-    ui = addUI(
-      configuration,
-      'WebGPU',
-      debugInputLabels,
-      getResolution(engine),
-      [
-        'Left Mouse = Move Camera',
-        'F = Fullscreen',
-        'C = Create Orbiter'
-      ]
-    )
-  } else {
-    engine = new BABYLON.Engine(
+    }),
+    createWebGL: () => new BABYLON.Engine(
       canvas,
       configuration.antialias,
-      {},
+      { powerPreference: configuration.powerPreference },
       configuration.adaptToDeviceRatio
-    )
-    scene = new BABYLON.Scene(engine)
-    ui = addUI(
-      configuration,
-      'WebGL',
-      debugInputLabels,
-      getResolution(engine),
-      [
-        'Left Mouse = Move Camera',
-        'F = Fullscreen',
-        'C = Create Orbiter'
-      ]
-    )
+    ),
+    warn: error => {
+      console.warn(
+        '[Rendering] WebGPU startup failed; using WebGL.',
+        error
+      )
+    }
+  })
+  engine = engineResult.engine
+  scene = new BABYLON.Scene(engine)
+  debugHud = new DebugHud(
+    configuration,
+    engineResult.renderingType,
+    debugInputLabels,
+    getResolution(engine),
+    runtimeInputLabels
+  )
 
+  if (engineResult.renderingType === 'WebGL') {
     const info = document.createElement('div')
     info.className = 'info-overlay'
-    info.textContent =
-      'WebGPU is not available. Using WebGL. For WebGPU, use a ' +
-      'compatible browser and HTTPS.'
+    info.textContent = engineResult.fallbackReason === 'unavailable'
+      ? 'WebGPU is not available. Using WebGL.'
+      : 'WebGPU could not start. Using WebGL.'
     document.body.append(info)
     adjustUIForInspector()
   }
@@ -167,16 +192,20 @@ async function main() {
   observer.observe(document.body, { childList: true, subtree: true })
 
   engine.onResizeObservable.add(() => {
-    ui.setResolution(getResolution(engine))
+    debugHud.setResolution(getResolution(engine))
     adjustUIForInspector()
   })
 
+  let updateMovementJoystickLayout = () => undefined
   const handleResize = () => {
     engine.resize()
+    updateMovementJoystickLayout()
   }
+  const resizeObserver = new ResizeObserver(handleResize)
+  resizeObserver.observe(canvas)
 
-  ui.setVisible(debugPreferences.hudVisible)
-  ui.setTargetFPS(targetFramerate)
+  debugHud.setVisible(debugPreferences.hudVisible)
+  debugHud.setTargetFPS(targetFramerate)
   window.addEventListener('resize', handleResize)
 
   let addOrbiter = new AddOrbiterClass(
@@ -189,35 +218,154 @@ async function main() {
 
   const createOrbiter = () => {
     orbiters.push(addOrbiter.create())
-    playSound(
-      `${import.meta.env.BASE_URL}assets/audio/Pop01.mp3`
-    )
   }
 
-  const alpha = 0
-  const beta = 0
-  const radius = 5
-  const target = new BABYLON.Vector3(-4, 2, 5)
-  const camera = new BABYLON.ArcRotateCamera(
-    'camera',
-    alpha,
-    beta,
-    radius,
-    target,
-    scene
+  const world = await createGameWorld(
+    scene,
+    import.meta.env.BASE_URL
   )
-  camera.setTarget(new BABYLON.Vector3(0, 1, 0))
-  camera.attachControl(canvas, true)
+  const progression = new LevelProgression(levelDefinitions)
+  const prototype = world.prototype
+  const zones = world.zones
+  const soundManager = new SoundManager()
+  const backgroundMusicUrl =
+    `${import.meta.env.BASE_URL}assets/audio/music/invincible.ogg`
+  const worldClickSoundUrl =
+    `${import.meta.env.BASE_URL}assets/audio/sfx/rotate.wav`
+  const runtimeUiClickSoundUrl =
+    `${import.meta.env.BASE_URL}assets/audio/sfx/rotate.wav`
+  if (backgroundMusicEnabled) {
+    soundManager.startMusic(
+      backgroundMusicUrl,
+      backgroundMusicVolume
+    )
+  }
+  const camera = createPrototypeCamera(scene)
+  configureRuntimeCamera(camera, prototype.player)
+  const runtimeInput = new RuntimeInputController(
+    prototype.player,
+    camera,
+    window
+  )
 
-  await Promise.all([
-    BABYLON.SceneLoader.AppendAsync(
-      `${import.meta.env.BASE_URL}assets/models/glb/`,
-      'pixel_room.glb',
-      scene
+  const productionHud = new ProductionHud(
+    scene,
+    formatHudTitle(
+      progression.activeLevelDefinition.name,
+      progression.activeQuestDefinition.name
     ),
-    initPhysics(scene)
-  ])
-  adjustLighting(scene)
+    progression.activeQuestDefinition.inventorySlotCount
+  )
+  const movementJoystick = productionHud.addMovementJoystick(
+    direction => runtimeInput.setPlayerAnalogInput(direction)
+  )
+  updateMovementJoystickLayout = () => {
+    const canvasRect = canvas.getBoundingClientRect()
+    movementJoystick.updateLayout(
+      {
+        height: canvasRect.height,
+        left: canvasRect.left
+      },
+      readJoystickViewport(document.documentElement)
+    )
+  }
+  updateMovementJoystickLayout()
+  const score = 0
+  const appleUrl =
+    `${import.meta.env.BASE_URL}assets/images/inventory/apple.png`
+  const apple = { imageUrl: appleUrl }
+  let isCompletionActionPending = false
+  const getQuestSoundUrl = (sound: string) =>
+    `${import.meta.env.BASE_URL}${sound}`
+  const startActiveLevel = () => {
+    const definition = progression.activeLevelDefinition
+    const questDefinition = progression.activeQuestDefinition
+    const spawn = definition.playerSpawn
+    prototype.player.position.set(spawn.x, spawn.y, spawn.z)
+    prototype.player.rotation.y = 0
+
+    for (const zone of zones) {
+      zone.update(prototype.player.position)
+    }
+
+    productionHud.setTitle(formatHudTitle(
+      definition.name,
+      questDefinition.name
+    ))
+    productionHud.setInventory(createInventorySlots(
+      apple,
+      progression.quest.appleCount,
+      questDefinition.inventorySlotCount
+    ))
+    productionHud.hidePrompt()
+    runtimeInput.setEnabled(true)
+    movementJoystick.setEnabled(true)
+    camera.attachControl(canvas, true)
+    isCompletionActionPending = false
+    const questBeginningSoundUrl = getQuestSoundUrl(
+      progression.activeQuestDefinition.beginningSound
+    )
+    soundManager.playEffect(questBeginningSoundUrl, clickSoundVolume)
+  }
+  productionHud.setScore(score)
+  startActiveLevel()
+  world.appleZone.onEnteredObservable.add(() => {
+    const collection = progression.collectApple()
+
+    if (!collection.accepted) {
+      return
+    }
+
+    const questUpdateSoundUrl = getQuestSoundUrl(
+      progression.activeQuestDefinition.updateSound
+    )
+    soundManager.playEffect(questUpdateSoundUrl, clickSoundVolume)
+    productionHud.setInventory(createInventorySlots(
+      apple,
+      progression.quest.appleCount,
+      progression.activeQuestDefinition.inventorySlotCount
+    ))
+
+    if (!collection.justCompleted) {
+      return
+    }
+
+    runtimeInput.setEnabled(false)
+    movementJoystick.setEnabled(false)
+    camera.detachControl()
+    const isFinalLevel = progression.isFinalLevel
+    productionHud.showPrompt({
+      title: isFinalLevel ? 'Game Complete' : 'Level Complete',
+      body: isFinalLevel ? 'Restart Game?' : 'Next Level?',
+      buttons: [
+        {
+          label: 'OK',
+          onClick: async () => {
+            if (isCompletionActionPending) {
+              return
+            }
+
+            isCompletionActionPending = true
+            await soundManager.playEffectAndWait(
+              runtimeUiClickSoundUrl,
+              clickSoundVolume
+            )
+
+            if (progression.isGameComplete) {
+              window.location.reload()
+              return
+            }
+
+            if (progression.advance()) {
+              startActiveLevel()
+            } else {
+              isCompletionActionPending = false
+            }
+          }
+        }
+      ]
+    })
+  })
 
   if (showLoader) {
     const loaderDiv = document.getElementById('custom-loader')
@@ -226,57 +374,18 @@ async function main() {
     }
   }
 
-  for (const texture of scene.textures) {
-    texture.updateSamplingMode(1)
-  }
-
-  {
-    const width = 3.8
-    const height = 3.8
-    const subdivisions = 1
-    const ground = BABYLON.MeshBuilder.CreateGround(
-      'ground',
-      { width, height, subdivisions },
-      scene
-    )
-    ground.position.y = -0.01
-    addPhysicsImposter(
-      ground,
-      BABYLON.PhysicsShapeType.BOX,
-      scene,
-      0
-    )
-  }
-
-  const spherePhysics = new PhysicsData()
-  spherePhysics.mass = 2
-  spherePhysics.restitution = 0.8
-  {
-    const segments = 32
-    const diameter = 1
-    const sphere = BABYLON.MeshBuilder.CreateSphere(
-      'sphere',
-      { segments, diameter },
-      scene
-    )
-    sphere.position.y = 5
-    addPhysicsImposter(
-      sphere,
-      BABYLON.PhysicsShapeType.SPHERE,
-      scene,
-      spherePhysics.mass,
-      spherePhysics.restitution
-    )
-  }
 
   const pipeline = addPostProcess(scene, [camera])
 
-  addInput(canvas, scene, {
-    onFullscreen: toggleFullscreen,
-    onHud: () => {
-      debugPreferences.hudVisible = ui.toggle()
-      saveDebugPreferences()
+  const inputController = addInput(canvas, scene, {
+    onClick: () => {
+      if (backgroundMusicEnabled) {
+        soundManager.resumeMusic()
+      }
+      soundManager.playEffect(worldClickSoundUrl, clickSoundVolume)
     },
+    onFullscreen: toggleFullscreen,
+    onHud: toggleDebugHud,
     onInspector: inspectorOpen => {
       if (debugPreferences.inspectorOpen === inspectorOpen) {
         return
@@ -290,7 +399,7 @@ async function main() {
       configuration.antialias = !configuration.antialias
       debugPreferences.antialias = configuration.antialias
       pipeline.fxaaEnabled = configuration.antialias
-      ui.setConfig()
+      debugHud.setConfig()
       saveDebugPreferences()
     },
     onFramerate: () => {
@@ -298,7 +407,8 @@ async function main() {
         (targetFramerateIndex + 1) % targetFramerates.length
       debugPreferences.targetFramerateIndex = targetFramerateIndex
       targetFramerate = targetFramerates[targetFramerateIndex]
-      ui.setTargetFPS(targetFramerate)
+      renderScheduler.setTargetFPS(targetFramerate)
+      debugHud.setTargetFPS(targetFramerate)
       saveDebugPreferences()
     },
     onRestart: () => {
@@ -311,17 +421,58 @@ async function main() {
       pipeline.fxaaEnabled = configuration.antialias
       targetFramerateIndex = debugPreferences.targetFramerateIndex
       targetFramerate = targetFramerates[targetFramerateIndex]
-      ui.setVisible(debugPreferences.hudVisible)
-      ui.setConfig()
-      ui.setTargetFPS(targetFramerate)
-      ui.setShortcuts(getDebugInputLabels(debugPreferences))
+      renderScheduler.setTargetFPS(targetFramerate)
+      debugHud.setVisible(debugPreferences.hudVisible)
+      debugHud.setConfig()
+      debugHud.setTargetFPS(targetFramerate)
+      debugHud.setShortcuts(getDebugInputLabels(debugPreferences))
       adjustUIForInspector()
     }
   }, {
     initialInspectorOpen: debugPreferences.inspectorOpen
   })
 
+  const applyDebugPreferences = () => {
+    configuration.antialias = debugPreferences.antialias
+    pipeline.fxaaEnabled = debugPreferences.antialias
+    targetFramerateIndex = debugPreferences.targetFramerateIndex
+    targetFramerate = targetFramerates[targetFramerateIndex]
+    renderScheduler.setTargetFPS(targetFramerate)
+    debugHud.setVisible(debugPreferences.hudVisible)
+    debugHud.setConfig()
+    debugHud.setTargetFPS(targetFramerate)
+    debugHud.setShortcuts(getDebugInputLabels(debugPreferences))
+  }
+  const setMobileFullscreen = async (enabled: boolean) => {
+    if (enabled && !document.fullscreenElement) {
+      await document.documentElement.requestFullscreen()
+    } else if (!enabled && document.fullscreenElement) {
+      await document.exitFullscreen()
+    }
+  }
+  const toggleMobileMode = async () => {
+    const enabled = !debugPreferences.mobileModeEnabled
+    setMobileModePreference(
+      debugPreferences,
+      storage,
+      enabled
+    )
+    applyDebugPreferences()
+
+    try {
+      await setMobileFullscreen(enabled)
+    } catch (error) {
+      console.warn('[MobileMode] Fullscreen request failed:', error)
+    }
+
+    await inputController.setInspectorOpen(false)
+  }
+  const threeFingerTap = new ThreeFingerTapController(window, () => {
+    void toggleMobileMode()
+  })
+
   let lastOrbiterTime = performance.now()
+  let lastInputTime = performance.now()
 
   const updateOrbiters = (deltaSeconds: number) => {
     for (let index = orbiters.length - 1; index >= 0; index -= 1) {
@@ -333,48 +484,73 @@ async function main() {
 
   scene.physicsEnabled = false
   const physicsStepMs = 1000 / 60
+  const maximumPhysicsSteps = 5
   let physicsAccumulatorMs = 0
   let lastPhysicsTime = performance.now()
 
   const advancePhysics = (now: number) => {
-    physicsAccumulatorMs += now - lastPhysicsTime
+    const elapsedMs = Math.max(0, now - lastPhysicsTime)
     lastPhysicsTime = now
+    physicsAccumulatorMs = Math.min(
+      physicsAccumulatorMs + elapsedMs,
+      physicsStepMs * maximumPhysicsSteps
+    )
+    let physicsSteps = 0
 
-    while (physicsAccumulatorMs >= physicsStepMs) {
+    while (
+      physicsAccumulatorMs >= physicsStepMs &&
+      physicsSteps < maximumPhysicsSteps
+    ) {
       scene._advancePhysicsEngineStep(physicsStepMs)
       physicsAccumulatorMs -= physicsStepMs
+      physicsSteps += 1
     }
   }
 
   let lastFPSUpdateTime = 0
   let renderedFrames = 0
-  let lastRenderTime = 0
 
   engine.runRenderLoop(() => {
     const now = performance.now()
     advancePhysics(now)
+    const inputDeltaSeconds = (now - lastInputTime) / 1000
+    lastInputTime = now
+    runtimeInput.update(inputDeltaSeconds)
+    for (const zone of zones) {
+      zone.update(prototype.player.position)
+    }
     const deltaSeconds = (now - lastOrbiterTime) / 1000
     lastOrbiterTime = now
     updateOrbiters(deltaSeconds)
 
-    const targetFrameMs = 1000 / targetFramerate
-
-    if (now - lastRenderTime < targetFrameMs) {
+    if (!renderScheduler.shouldRender(now)) {
       return
     }
 
-    lastRenderTime = now
     scene.render()
     renderedFrames += 1
 
     if (now - lastFPSUpdateTime >= 1000) {
       const elapsedSeconds = (now - lastFPSUpdateTime) / 1000
-      ui.setFPS(Math.round(renderedFrames / elapsedSeconds))
+      debugHud.setFPS(Math.round(renderedFrames / elapsedSeconds))
       lastFPSUpdateTime = now
       renderedFrames = 0
     }
   })
   handleResize()
+
+  const disposeRuntime = () => {
+    threeFingerTap.dispose()
+    runtimeInput.dispose()
+    productionHud.dispose()
+    resizeObserver.disconnect()
+    observer.disconnect()
+    window.removeEventListener('resize', handleResize)
+    engine.dispose()
+  }
+  window.addEventListener('beforeunload', disposeRuntime, {
+    once: true
+  })
 
   if (import.meta.hot) {
     import.meta.hot.accept('./addOrbiter.ts', module => {

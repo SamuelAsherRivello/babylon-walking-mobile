@@ -88,3 +88,5 @@ pids
 lib-cov
 /.tmp-chrome-fullscreen-profile
 /output
+/Babylon/.playwright-cli
+/Babylon/output

@@ -10,6 +10,10 @@ describe('custom resolution display', () => {
     )
 
     expect(source).toContain('engine.onResizeObservable.add')
-    expect(source).toContain('ui.setResolution(getResolution(engine))')
+    expect(source).toContain(
+      'debugHud.setResolution(getResolution(engine))'
+    )
+    expect(source).toContain('updateMovementJoystickLayout()')
+    expect(source).toContain('readJoystickViewport(')
   })
 })

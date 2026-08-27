@@ -14,5 +14,9 @@ describe('debug input labels', () => {
     expect(labels).toContain('4 = Toggle FPS')
     expect(labels).toContain('5 = Reset to Defaults (Disk)')
     expect(labels).toContain('6 = Restart Scene')
+    expect(labels).toContain(
+      '3 Finger Tap = Tog. Mobile Mode'
+    )
+    expect(labels.at(-1)).toBe('IJKL = Move Camera')
   })
 })

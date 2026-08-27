@@ -3,6 +3,7 @@ import * as BABYLON from '@babylonjs/core'
 // addInput.ts - Handles mouse click input and keyboard shortcuts.
 
 type InputActions = {
+  onClick?: () => void
   onFullscreen?: () => Promise<void> | void
   onHud?: () => void
   onInspector?: (inspectorOpen: boolean) => void
@@ -42,6 +43,7 @@ export function addInput(
     const y = event.clientY - rect.top
 
     console.log(`Clicked at: (${x}, ${y})`)
+    actions.onClick?.()
   })
 
   window.addEventListener('keydown', async ({ key }) => {
@@ -86,6 +88,13 @@ export function addInput(
     let inspectorOpen = options.initialInspectorOpen ?? false
 
     const updateInspectorOpen = async (nextInspectorOpen: boolean) => {
+      if (!nextInspectorOpen && !inspectorReady) {
+        inspectorOpen = false
+        updateTextElementPosition(false)
+        actions.onInspector?.(false)
+        return
+      }
+
       if (!inspectorReady) {
         await import('@babylonjs/core/Debug/debugLayer')
         await import('@babylonjs/inspector')
@@ -124,6 +133,12 @@ export function addInput(
 
     if (inspectorOpen) {
       void updateInspectorOpen(true)
+    }
+  }
+
+  return {
+    setInspectorOpen: async (inspectorOpen: boolean) => {
+      await setInspectorOpen?.(inspectorOpen)
     }
   }
 }
