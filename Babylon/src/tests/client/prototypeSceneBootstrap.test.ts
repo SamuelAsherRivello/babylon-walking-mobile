@@ -130,7 +130,7 @@ describe('prototype scene bootstrap', () => {
       'runtimeInput.update(inputDeltaSeconds)'
     )
     const zoneUpdate = source.indexOf(
-      'zone.update(prototype.player.position)',
+      'zone.update(prototype.player.position, !playerActions.isJumping)',
       movementUpdate
     )
 
@@ -152,7 +152,7 @@ describe('prototype scene bootstrap', () => {
       spawn
     )
     const spawnZoneUpdate = source.indexOf(
-      'zone.update(prototype.player.position)',
+      'zone.update(prototype.player.position, !playerActions.isJumping)',
       spawn
     )
     const movement = source.indexOf(
@@ -163,7 +163,7 @@ describe('prototype scene bootstrap', () => {
       movement
     )
     const movementZoneUpdate = source.indexOf(
-      'zone.update(prototype.player.position)',
+      'zone.update(prototype.player.position, !playerActions.isJumping)',
       movement
     )
 

@@ -93,8 +93,8 @@ describe('world zone', () => {
     })
     const playerPosition = new Vector3(0.5, 0.5, 0)
 
-    first.update(playerPosition)
-    second.update(playerPosition)
+    first.update(playerPosition, true)
+    second.update(playerPosition, true)
 
     expect(first.isPlayerInside).toBe(true)
     expect(second.isPlayerInside).toBe(true)
@@ -119,8 +119,8 @@ describe('world zone', () => {
       zoneBackgroundColorDefault
     )
 
-    zone.update(new Vector3(0, 0.5, 0))
-    zone.update(new Vector3(0.25, 0.5, 0.25))
+    zone.update(new Vector3(0, 0.5, 0), true)
+    zone.update(new Vector3(0.25, 0.5, 0.25), true)
 
     expect(zone.fillMaterial.diffuseColor).toEqual(
       zoneBackgroundColorConfirmation
@@ -129,13 +129,44 @@ describe('world zone', () => {
     expect(zone.fillMaterial.alpha).toBeCloseTo(0.42)
     expect(transitions).toEqual(['enter'])
 
-    zone.update(new Vector3(2, 0.5, 0))
-    zone.update(new Vector3(3, 0.5, 0))
+    zone.update(new Vector3(2, 0.5, 0), true)
+    zone.update(new Vector3(3, 0.5, 0), true)
 
     expect(zone.fillMaterial.diffuseColor).toEqual(
       zoneBackgroundColorDefault
     )
     expect(zone.fillMaterial.alpha).toBeCloseTo(0.42)
+    expect(transitions).toEqual(['enter', 'exit'])
+  })
+
+  it('waits for landing before entering or exiting', () => {
+    const zone = createZone(scene, {
+      id: 'goal',
+      title: 'GOAL',
+      position: Vector3.Zero(),
+      size_x: 2,
+      size_z: 2
+    })
+    const transitions: string[] = []
+
+    zone.onEnteredObservable.add(() => transitions.push('enter'))
+    zone.onExitedObservable.add(() => transitions.push('exit'))
+
+    zone.update(Vector3.Zero(), false)
+    expect(zone.isPlayerInside).toBe(false)
+    expect(transitions).toEqual([])
+
+    zone.update(Vector3.Zero(), true)
+    expect(zone.isPlayerInside).toBe(true)
+    expect(transitions).toEqual(['enter'])
+
+    zone.update(Vector3.Zero(), false)
+    zone.update(new Vector3(2, 1, 0), false)
+    expect(zone.isPlayerInside).toBe(true)
+    expect(transitions).toEqual(['enter'])
+
+    zone.update(new Vector3(2, 0, 0), true)
+    expect(zone.isPlayerInside).toBe(false)
     expect(transitions).toEqual(['enter', 'exit'])
   })
 
@@ -196,7 +227,7 @@ describe('world zone', () => {
       backgroundColorDefault
     )
 
-    zone.update(Vector3.Zero())
+    zone.update(Vector3.Zero(), true)
 
     expect(zone.fillMaterial.diffuseColor).toEqual(
       backgroundColorConfirmation
@@ -216,7 +247,7 @@ describe('world zone', () => {
     const transitions: string[] = []
     zone.onEnteredObservable.add(() => transitions.push('enter'))
 
-    zone.update(Vector3.Zero())
+    zone.update(Vector3.Zero(), true)
 
     expect(zone.isPlayerInside).toBe(true)
     expect(zone.fillMaterial.diffuseColor).toEqual(
@@ -239,8 +270,8 @@ describe('world zone', () => {
     zone.onEnteredObservable.add(() => transitions.push('enter'))
     zone.onExitedObservable.add(() => transitions.push('exit'))
 
-    zone.update(Vector3.Zero())
-    zone.update(new Vector3(4, 0, 4))
+    zone.update(Vector3.Zero(), true)
+    zone.update(new Vector3(4, 0, 4), true)
 
     expect(zone.isPlayerInside).toBe(false)
     expect(zone.fillMaterial.diffuseColor).toEqual(

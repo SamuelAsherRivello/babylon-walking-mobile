@@ -364,7 +364,7 @@ async function main() {
     walkableArea.constrainPlayer()
 
     for (const zone of zones) {
-      zone.update(prototype.player.position)
+      zone.update(prototype.player.position, !playerActions.isJumping)
     }
 
     productionHud.setTitle(formatHudTitle(
@@ -638,7 +638,7 @@ async function main() {
     playerActions.update(inputDeltaSeconds)
     walkableArea.constrainPlayer()
     for (const zone of zones) {
-      zone.update(prototype.player.position)
+      zone.update(prototype.player.position, !playerActions.isJumping)
     }
     const deltaSeconds = (now - lastOrbiterTime) / 1000
     lastOrbiterTime = now

@@ -1,7 +1,20 @@
+<!--
+AI reading guide:
+- Treat visible text as user-facing project documentation.
+- Read the page from demo, to setup, to internals, to support.
+- Keep commands consistent with Babylon/package.json.
+- Keep authored lines at 80 characters or fewer.
+- Do not restore removed release-history wording under Live Demo.
+-->
+
 # Babylon Walking Mobile
+
+<!-- AI: This introduction defines the project and its target platforms. -->
 
 This demo project uses Babylon.js for a simple walking game that works with
 WebGPU on PC and Mobile.
+
+<!-- AI: This figure is the primary visual preview of the running game. -->
 
 <figure>
   <img
@@ -14,14 +27,15 @@ WebGPU on PC and Mobile.
   </figcaption>
 </figure>
 
+<!-- AI: This section provides the public build and a support shortcut. -->
+
 ## Live Demo
 
 https://samuelasherrivello.github.io/babylon-walking-mobile/latest/
 
-The live link always opens the newest published release. Immutable builds are
-available under `/releases/<version>/` for replaying a specific version.
-
 WebGPU not working? See [Troubleshooting](#troubleshooting).
+
+<!-- AI: This list maps the major visible sections in reading order. -->
 
 ## Table of Contents
 
@@ -33,7 +47,11 @@ WebGPU not working? See [Troubleshooting](#troubleshooting).
 6. [Resources](#resources)
 7. [Credits](#credits)
 
+<!-- AI: This section contains local setup, release, and command guidance. -->
+
 ## Getting Started
+
+<!-- AI: Follow these steps to install, build, and run the project locally. -->
 
 ### Play Project
 
@@ -43,26 +61,46 @@ WebGPU not working? See [Troubleshooting](#troubleshooting).
 4. Run `npm run build` to build the project.
 5. Run `npm start` to launch a local development server.
 
+<!-- AI: Keep this release process brief and numbered. -->
+
+### Release Workflow
+
+1. Create a GitHub Release with a version tag such as `v0.01`.
+2. Wait for `ReleaseWebBuildToGithubPages` to finish.
+3. Verify the published build from the Live Demo link.
+
+<!-- AI: This table is the command reference for routine project work. -->
+
 ### More Commands
 
-- `npm install`: Download and install dependencies.
-- `npm run build`: Build the app.
-- `npm start`: Run the app locally with hot reload.
-- `npm run check`: Check TypeScript.
-- `npm run run_unit_tests`: Run unit tests.
+| # | Name | Command | Comment |
+| --- | --- | --- | --- |
+| 1 | Install | `npm install` | Downloads and installs dependencies. |
+| 2 | Build | `npm run build` | Builds the app. |
+| 3 | Start | `npm start` | Runs the app locally with hot reload. |
+| 4 | Check | `npm run check` | Checks TypeScript. |
+| 5 | Test | `npm run run_unit_tests` | Runs unit tests. |
+
+<!-- AI: This section summarizes the repository at a high level. -->
 
 ## Project Overview
 
 This repo demonstrates browser-based game development with Babylon.js,
 TypeScript, and WebGPU.
 
+<!-- AI: This subsection identifies the primary documentation file. -->
+
 ### Documentation
 
 - `README.md`: Primary documentation for this repo.
 
+<!-- AI: This subsection identifies the main runtime technology. -->
+
 ### Configuration
 
 - `Game Engine`: Babylon.js powers the 3D graphics and gameplay systems.
+
+<!-- AI: This subsection maps important repository paths to their roles. -->
 
 ### Structure
 
@@ -75,11 +113,17 @@ TypeScript, and WebGPU.
 - `Babylon/src/client/scripts/index.ts`: Main game setup.
 - `Babylon/src/tests/client/`: Unit tests.
 
+<!-- AI: This subsection points to dependency and script metadata. -->
+
 ### Dependencies
 
 - `Babylon/package.json`: Lists dependencies and scripts.
 
+<!-- AI: This section explains tools and the specification workflow. -->
+
 ## Project Details
+
+<!-- AI: This list names recommended development and inspection tools. -->
 
 ### Editor Tooling
 
@@ -87,6 +131,8 @@ TypeScript, and WebGPU.
 - ESLint extension: Linting support for JavaScript and TypeScript.
 - Error Lens extension: In-editor error and warning highlights.
 - Babylon.js Inspector: Runtime scene inspection.
+
+<!-- AI: This list summarizes the important installed packages. -->
 
 ### Code Packages
 
@@ -96,6 +142,8 @@ TypeScript, and WebGPU.
 - `typescript`: TypeScript compiler.
 - `eslint`: Linting for TypeScript.
 - `vitest`: Unit testing for TypeScript.
+
+<!-- AI: This table is the ordered OpenSpec change workflow. -->
 
 ### OpenSpec
 
@@ -110,7 +158,11 @@ current specifications aligned.
 | 4 | Sync | `/opsx:sync <name>` | Updates main specs without archiving. |
 | 5 | Archive | `/opsx:archive <name>` | Finalizes and archives a change. |
 
+<!-- AI: This section starts with first-party checks, then other tools. -->
+
 ## Troubleshooting
+
+<!-- AI: Use this flow when WebGPU rendering is unavailable. -->
 
 ### WebGPU not working?
 
@@ -135,6 +187,8 @@ Third-party references:
 - [Can I use: WebGPU](https://caniuse.com/webgpu) tracks current browser
   support, including mobile browsers.
 
+<!-- AI: These links are authoritative learning and reference material. -->
+
 ## Resources
 
 - [Babylon.js Documentation](https://doc.babylonjs.com/)
@@ -144,12 +198,18 @@ Third-party references:
   )
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 
+<!-- AI: This section records authorship, contact details, and licensing. -->
+
 ## Credits
+
+<!-- AI: Preserve the creator attribution as written. -->
 
 ### Created By
 
 - Samuel Asher Rivello
 - Over 25 years of game development experience as of 2026
+
+<!-- AI: These are the project's public creator contact links. -->
 
 ### Contact
 
@@ -157,6 +217,8 @@ Third-party references:
 - Git: <https://github.com/SamuelAsherRivello/>
 - Resume and portfolio: <http://www.SamuelAsherRivello.com>
 - LinkedIn: <https://Linkedin.com/in/SamuelAsherRivello>
+
+<!-- AI: This subsection states the repository's license and copyright. -->
 
 ### License
 

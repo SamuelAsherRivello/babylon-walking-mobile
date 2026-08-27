@@ -60,8 +60,10 @@ cast shadows, block movement, or participate in physics.
 
 ### Requirement: Player occupancy state
 
-Each zone SHALL determine occupancy from the player's ground position on the
-world X/Z plane. A position on the rectangle boundary SHALL count as inside.
+Each zone SHALL settle occupancy only while the player is grounded, based on
+whether the player's position overlaps the zone on the world X/Z plane. A
+position on the rectangle boundary SHALL count as inside. While the player is
+airborne, the zone SHALL preserve its last grounded occupancy state.
 
 #### Scenario: Player crosses into a zone
 
@@ -77,6 +79,19 @@ world X/Z plane. A position on the rectangle boundary SHALL count as inside.
 
 - **WHEN** the player's ground position is inside more than one zone
 - **THEN** each matching zone independently reports an inside state
+
+#### Scenario: Airborne player crosses into a zone
+
+- **GIVEN** the player's last grounded position was outside a zone
+- **WHEN** the airborne player overlaps the zone
+- **THEN** that zone remains outside until the player lands in the zone
+
+#### Scenario: Player jumps while visiting a zone
+
+- **GIVEN** the player's last grounded position was inside a zone
+- **WHEN** the player jumps in place or crosses the boundary while airborne
+- **THEN** that zone remains inside
+- **AND** it becomes outside only after the player lands outside the zone
 
 ### Requirement: Occupancy changes zone appearance
 

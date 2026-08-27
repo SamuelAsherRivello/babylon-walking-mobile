@@ -56,7 +56,7 @@ describe('physics frame-rate independence', () => {
       'runtimeInput.update(inputDeltaSeconds)'
     )
     const zoneUpdateIndex = source.indexOf(
-      'zone.update(prototype.player.position)'
+      'zone.update(prototype.player.position, !playerActions.isJumping)'
     )
     const renderThrottleIndex = source.indexOf(
       'if (!renderScheduler.shouldRender(now))'

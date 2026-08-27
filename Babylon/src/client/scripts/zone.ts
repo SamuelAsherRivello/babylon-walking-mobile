@@ -185,10 +185,14 @@ export class WorldZone {
     return offsetX <= this.size_x / 2 && offsetZ <= this.size_z / 2
   }
 
-  public update(playerPosition: Vector3): void {
+  public update(playerPosition: Vector3, isPlayerGrounded: boolean): void {
     if (!this.isEnabled) {
       this.isPlayerInside = false
       this.applyBackground(this.backgroundColorDefault)
+      return
+    }
+
+    if (!isPlayerGrounded) {
       return
     }
 
