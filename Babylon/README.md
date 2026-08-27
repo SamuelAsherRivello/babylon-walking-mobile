@@ -1,4 +1,4 @@
-# babylon-template
+# Babylon Walking Mobile
 A project template for Vite + Babylon.js + Havok Physics + Typescript
 
 ### Getting started

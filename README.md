@@ -1,4 +1,4 @@
-# Babylon.js Project Template
+# Babylon Walking Mobile
 
 This repo is a starting point for Babylon.js projects using TypeScript.
 It includes physics, post-processing, tests, and a modular structure.
