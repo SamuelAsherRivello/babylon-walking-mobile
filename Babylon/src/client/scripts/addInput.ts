@@ -9,6 +9,7 @@ type InputActions = {
   onInspector?: (inspectorOpen: boolean) => void
   onOrbiter?: () => void
   onAntialiasing?: () => void
+  onUpscaling?: () => void
   onFramerate?: () => void
   onRestart?: () => void
   onResetDefaults?: () => void
@@ -46,8 +47,8 @@ export function addInput(
     actions.onClick?.()
   })
 
-  window.addEventListener('keydown', async ({ key }) => {
-    const shortcut = key.toLowerCase()
+  window.addEventListener('keydown', async ({ code, key }) => {
+    const shortcut = code === 'KeyF' ? 'f' : key.toLowerCase()
 
     if (shortcut === 'f') {
       try {
@@ -66,15 +67,19 @@ export function addInput(
     }
 
     if (shortcut === '4') {
-      actions.onFramerate?.()
+      actions.onUpscaling?.()
     }
 
     if (shortcut === '5') {
+      actions.onFramerate?.()
+    }
+
+    if (shortcut === '6') {
       actions.onResetDefaults?.()
       await setInspectorOpen?.(false)
     }
 
-    if (shortcut === '6') {
+    if (shortcut === '7') {
       actions.onRestart?.()
     }
 

@@ -13,7 +13,9 @@ import {
 
 const cameraPosition = new Vector3(10, 10, -10)
 const lightPosition = new Vector3(40, 25.8, -10)
-const groundTextureScale = 10
+const groundSize = 24
+const groundTextureRepeatsPerUnit = 0.5
+const groundTextureScale = groundSize * groundTextureRepeatsPerUnit
 const shadowMapSize = 1024
 
 function createTextureUrl(baseUrl: string, filename: string): string {
@@ -68,7 +70,11 @@ export function createPrototypeScene(scene: Scene, baseUrl: string) {
 
   const ground = MeshBuilder.CreateGround(
     'Ground',
-    { width: 20, height: 20, subdivisions: 1 },
+    {
+      width: groundSize,
+      height: groundSize,
+      subdivisions: 1
+    },
     scene
   )
 

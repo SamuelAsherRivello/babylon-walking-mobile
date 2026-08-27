@@ -21,6 +21,8 @@ type SpeedStep = {
 const maxDeltaSeconds = 0.1
 const minimumCameraBeta = 0.1
 const maximumCameraBeta = Math.PI / 2 - 0.1
+const minimumCameraRadius = 7
+const maximumCameraRadius = 72
 const playerAnalogDeadZone = 0.15
 
 const playerKeyCodes = new Set([
@@ -188,6 +190,8 @@ export function configureRuntimeCamera(
   player: TransformNode
 ) {
   camera.setTarget(player)
+  camera.lowerRadiusLimit = minimumCameraRadius
+  camera.upperRadiusLimit = maximumCameraRadius
   const keyboardInput = camera.inputs.attached.keyboard
 
   if (keyboardInput) {
@@ -366,7 +370,10 @@ export class RuntimeInputController {
   private updatePlayer(deltaSeconds: number) {
     const hasHeldInput = hasAnyKey(this.heldKeys, playerKeyCodes)
     const keys = hasHeldInput ? this.heldKeys : this.pendingKeys
-    const keyboardDirection = normalizeDirection(getPlayerDirection(keys))
+    const keyboardInput = normalizeDirection(getPlayerDirection(keys))
+    const keyboardDirection = this.getViewRelativePlayerDirection(
+      keyboardInput
+    )
     const analogMotion = this.getAnalogPlayerMotion()
     const direction = analogMotion.intensity > 0
       ? analogMotion.direction
@@ -438,6 +445,24 @@ export class RuntimeInputController {
       }
     }
 
+    const stickDirection = this.analogPlayerInput.scale(1 / rawLength)
+    const direction = this.getViewRelativePlayerDirection(
+      stickDirection
+    )
+    const intensity = Math.min(
+      (rawLength - playerAnalogDeadZone) /
+        (1 - playerAnalogDeadZone),
+      1
+    )
+
+    return { direction, intensity }
+  }
+
+  private getViewRelativePlayerDirection(viewDirection: Vector2) {
+    if (viewDirection.lengthSquared() <= Number.EPSILON) {
+      return Vector2.Zero()
+    }
+
     this.camera.getViewMatrix(true)
     const target = this.camera.getTarget()
     const forward = new Vector2(
@@ -452,17 +477,11 @@ export class RuntimeInputController {
     }
 
     const right = new Vector2(forward.y, -forward.x)
-    const stickDirection = this.analogPlayerInput.scale(1 / rawLength)
-    const direction = right.scale(stickDirection.x).addInPlace(
-      forward.scale(stickDirection.y)
+    const direction = right.scale(viewDirection.x).addInPlace(
+      forward.scale(viewDirection.y)
     )
     normalizeDirection(direction)
-    const intensity = Math.min(
-      (rawLength - playerAnalogDeadZone) /
-        (1 - playerAnalogDeadZone),
-      1
-    )
 
-    return { direction, intensity }
+    return direction
   }
 }

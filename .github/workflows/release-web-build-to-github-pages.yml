@@ -68,7 +68,10 @@ jobs:
           set -euo pipefail
           test -f Babylon/dist/index.html
           test -f Babylon/dist/HavokPhysics.wasm
-          test -f Babylon/dist/assets/audio/Pop01.mp3
+          test -f Babylon/dist/assets/audio/sfx/rotate.wav
+          test -f Babylon/dist/assets/audio/sfx/levelup.wav
+          test -f Babylon/dist/assets/images/inventory/apple.png
+          test -f Babylon/dist/assets/models/tree/MapleTree_4.gltf
           test -f Babylon/dist/assets/models/glb/pixel_room.glb
 
       - name: Package release web build

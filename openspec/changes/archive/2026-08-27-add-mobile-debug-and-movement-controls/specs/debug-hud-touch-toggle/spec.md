@@ -69,15 +69,18 @@ keyboard shortcut SHALL continue to persist HUD visibility independently.
 - **WHEN** the browser rejects reading or writing the visibility preference
 - **THEN** the current session continues with an in-memory visibility state
 
-### Requirement: Debug Input advertises the mobile gesture
+### Requirement: Mobile Debug Input advertises the mobile gesture
 
-The Debug Input panel SHALL include the exact line
-`3 Finger Tap = Tog. Mobile Mode` on desktop and mobile.
+The existing debug shortcut panel SHALL be titled `Debug Input (PC)`. A
+`Debug Input (Mobile)` panel SHALL appear immediately below it on desktop and
+mobile, and SHALL contain only the line `3 Finger Tap = Mobile Mode`.
 
 #### Scenario: Guidance is visible
 
-- **WHEN** the Debug Input panel is shown on any supported platform
-- **THEN** it displays `3 Finger Tap = Tog. Mobile Mode`
+- **WHEN** the debug input panels are shown on any supported platform
+- **THEN** the PC shortcuts appear under `Debug Input (PC)`
+- **AND** the panel immediately below is titled `Debug Input (Mobile)`
+- **AND** its only input line is `3 Finger Tap = Mobile Mode`
 
 ### Requirement: Rendering backend does not change gesture behavior
 

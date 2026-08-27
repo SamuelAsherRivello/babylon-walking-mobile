@@ -1,9 +1,11 @@
+# Render Upscaling Controls Specification
+
 ## Purpose
 
 Provide explicit render-resolution trade-offs that help players pursue steady
 frame rates while preserving game-frame size and all other visual settings.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Manual upscaling modes
 
@@ -64,6 +66,11 @@ and SHALL recover safely from absent or invalid stored values.
 - **WHEN** the player activates Reset to Defaults
 - **THEN** the selected upscaling mode becomes `Off`
 - **AND** display resolution and render resolution match again
+
+#### Scenario: Player toggles mobile debug mode
+
+- **WHEN** the player toggles mobile debug mode after selecting upscaling
+- **THEN** the selected upscaling mode remains unchanged
 
 ### Requirement: Rendering diagnostics distinguish resolutions
 

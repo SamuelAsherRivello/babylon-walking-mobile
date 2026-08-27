@@ -1,5 +1,10 @@
 // debugHud.ts - Owns optional development diagnostics and shortcuts.
 import { BabylonConfigurationModel } from './model/babylonConfigurationModel'
+import type {
+  RenderResolution,
+  RenderResolutionSnapshot,
+  UpscalingMode
+} from './renderUpscaling'
 import { TextElement } from './view/textElement'
 
 type RenderingType = 'WebGPU' | 'WebGL'
@@ -50,14 +55,24 @@ function formatConfigText(configuration: BabylonConfigurationModel) {
 
 function formatRenderingText(
   renderingType: RenderingType,
-  resolution?: string,
+  displayResolution?: string,
+  renderResolution?: string,
+  upscalingMode?: UpscalingMode,
   fps?: number,
   targetFPS?: number
 ) {
   const lines = ['Rendering', `* Type = ${renderingType}`]
 
-  if (resolution) {
-    lines.push(`* Resolution = ${resolution}`)
+  if (displayResolution) {
+    lines.push(`* Total Rez = ${displayResolution}`)
+  }
+
+  if (renderResolution) {
+    lines.push(`* Render Rez = ${renderResolution}`)
+  }
+
+  if (upscalingMode) {
+    lines.push(`* Upscaling = ${upscalingMode}`)
   }
 
   if (typeof fps === 'number' && typeof targetFPS === 'number') {
@@ -86,9 +101,12 @@ export class DebugHud {
   public readonly configElem: TextElement
   public readonly renderElem: TextElement
   public readonly shortcutsElem?: TextElement
+  public readonly mobileShortcutsElem?: TextElement
   public readonly runtimeInputsElem?: TextElement
 
-  private currentResolution?: string
+  private currentDisplayResolution?: string
+  private currentRenderResolution?: string
+  private currentUpscalingMode?: UpscalingMode
   private currentFPS = 0
   private currentTargetFPS = 60
   private isVisible = true
@@ -98,10 +116,13 @@ export class DebugHud {
     private readonly configuration: BabylonConfigurationModel,
     private readonly renderingType: RenderingType,
     shortcuts?: string[],
-    resolution?: string,
-    runtimeInputs?: string[]
+    renderingResolution?: RenderResolutionSnapshot,
+    runtimeInputs?: string[],
+    mobileShortcuts?: string[]
   ) {
-    this.currentResolution = resolution
+    if (renderingResolution) {
+      this.setRenderingResolutionState(renderingResolution)
+    }
     this.cornerUI = this.getOrCreateCornerUI()
 
     this.configElem = new TextElement('', '10px')
@@ -115,7 +136,20 @@ export class DebugHud {
     if (shortcuts) {
       this.shortcutsElem = appendOverlayPanel(
         this.cornerUI,
-        ['Debug Input', ...shortcuts.map(value => `* ${value}`)]
+        [
+          'Debug Input (PC)',
+          ...shortcuts.map(value => `* ${value}`)
+        ]
+      )
+    }
+
+    if (mobileShortcuts) {
+      this.mobileShortcutsElem = appendOverlayPanel(
+        this.cornerUI,
+        [
+          'Debug Input (Mobile)',
+          ...mobileShortcuts.map(value => `* ${value}`)
+        ]
       )
     }
 
@@ -144,7 +178,7 @@ export class DebugHud {
   public setShortcuts(nextShortcuts: string[]) {
     this.shortcutsElem?.setHTML(
       formatBlock([
-        'Debug Input',
+        'Debug Input (PC)',
         ...nextShortcuts.map(value => `* ${value}`)
       ])
     )
@@ -154,8 +188,10 @@ export class DebugHud {
     this.configElem.setHTML(formatConfigText(this.configuration))
   }
 
-  public setResolution(nextResolution: string) {
-    this.currentResolution = nextResolution
+  public setRenderingResolution(
+    snapshot: RenderResolutionSnapshot
+  ) {
+    this.setRenderingResolutionState(snapshot)
     this.updateRenderingText()
   }
 
@@ -199,11 +235,29 @@ export class DebugHud {
     this.cornerUI.appendChild(element.element)
   }
 
+  private formatResolution(resolution: RenderResolution) {
+    return `${resolution.width} x ${resolution.height}`
+  }
+
+  private setRenderingResolutionState(
+    snapshot: RenderResolutionSnapshot
+  ) {
+    this.currentDisplayResolution = this.formatResolution(
+      snapshot.displayResolution
+    )
+    this.currentRenderResolution = this.formatResolution(
+      snapshot.renderResolution
+    )
+    this.currentUpscalingMode = snapshot.upscalingMode
+  }
+
   private updateRenderingText() {
     this.renderElem?.setHTML(
       formatRenderingText(
         this.renderingType,
-        this.currentResolution,
+        this.currentDisplayResolution,
+        this.currentRenderResolution,
+        this.currentUpscalingMode,
         this.currentFPS,
         this.currentTargetFPS
       )

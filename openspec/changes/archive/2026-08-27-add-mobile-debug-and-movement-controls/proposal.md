@@ -11,10 +11,14 @@ keyboard behavior.
 - Toggle a persisted mobile-mode profile with a three-finger tap. The profile
   hides the HUD, closes the Inspector, disables antialiasing, selects 60 FPS,
   and requests fullscreen; toggling off restores normal debug defaults.
-- Add `3 Finger Tap = Tog. Mobile Mode` to the Debug Input panel on every
-  platform.
+- Rename the existing panel to `Debug Input (PC)` and add a
+  `Debug Input (Mobile)` panel below it containing only
+  `3 Finger Tap = Mobile Mode`.
 - Add an always-visible virtual movement joystick in the lower-left on desktop
   and mobile, with active pointer capture through release anywhere on screen.
+- Keep the permanent gameplay HUD, inventory, joystick, and completion prompt
+  within the visible canvas and safe-area bounds during fullscreen, resize,
+  crop, and orientation changes.
 - Map joystick direction to the current camera view projected onto the world
   ground plane, so twelve o'clock moves toward the top of the visible game
   world while keyboard movement retains its existing fixed world-axis mapping.
@@ -38,8 +42,8 @@ None.
 
 - Affects debug input handling, debug preference persistence, runtime player
   movement input, Babylon GUI controls, startup composition, and focused tests.
-- Adds lower-left gameplay UI that must respect portrait safe areas and browser
-  viewport resizing.
+- Adds gameplay UI that must respect all portrait safe areas, the visible
+  canvas intersection, fullscreen transitions, and browser viewport resizing.
 - Uses the existing Babylon.js core and GUI dependencies; no dependency is
   added.
 - Desktop and portrait mobile gain the same visible joystick and gesture.

@@ -64,13 +64,14 @@ engine disposal remain the final runtime cleanup boundary.
 
 ### Preserve Ground texture density with world-space repeat scaling
 
-Increase the Ground plane from 20-by-20 to 100-by-100. Derive its U and V
-repeat values from the existing density of ten repeats per 20 world units,
-which produces 50 repeats across the new dimensions.
+Increase the Ground plane from 20-by-20 to 24-by-24, making each dimension
+120 percent of the unchanged walkable area. Derive its U and V repeat values
+from the existing density of ten repeats per 20 world units, which produces
+12 repeats across the new dimensions.
 
 Keeping the repeat value at ten was rejected because it would enlarge the
-texture tiles by a factor of five. Stretching a single texture copy was
-rejected because it would discard the established tiled presentation.
+texture tiles by a factor of 1.2. Stretching a single texture copy was rejected
+because it would discard the established tiled presentation.
 
 ### Constrain after shared motion and before zone evaluation
 

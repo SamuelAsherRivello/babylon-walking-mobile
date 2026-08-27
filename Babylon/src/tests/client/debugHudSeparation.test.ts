@@ -16,9 +16,11 @@ describe('HUD ownership', () => {
     expect(source).toContain('public setVisible(')
     expect(source).toContain('public setShortcuts(')
     expect(source).toContain('public setConfig()')
-    expect(source).toContain('public setResolution(')
+    expect(source).toContain('public setRenderingResolution(')
     expect(source).toContain('public setFPS(')
     expect(source).toContain('public setTargetFPS(')
+    expect(source).toContain("'Debug Input (PC)'")
+    expect(source).toContain("'Debug Input (Mobile)'")
   })
 
   it('does not expose debug visibility through production UI', () => {

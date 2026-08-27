@@ -139,6 +139,40 @@ describe('prototype scene bootstrap', () => {
     expect(zoneUpdate).toBeGreaterThan(movementUpdate)
   })
 
+  it('constrains shared movement and level spawns before zone updates', () => {
+    const source = readClientSource()
+    const startLevel = source.indexOf('const startActiveLevel = () =>')
+    const spawn = source.indexOf(
+      'prototype.player.position.set(spawn.x, spawn.y, spawn.z)',
+      startLevel
+    )
+    const spawnConstraint = source.indexOf(
+      'walkableArea.constrainPlayer()',
+      spawn
+    )
+    const spawnZoneUpdate = source.indexOf(
+      'zone.update(prototype.player.position)',
+      spawn
+    )
+    const movement = source.indexOf(
+      'runtimeInput.update(inputDeltaSeconds)'
+    )
+    const movementConstraint = source.indexOf(
+      'walkableArea.constrainPlayer()',
+      movement
+    )
+    const movementZoneUpdate = source.indexOf(
+      'zone.update(prototype.player.position)',
+      movement
+    )
+
+    expect(source).toContain('const walkableArea = world.walkableArea')
+    expect(spawnConstraint).toBeGreaterThan(spawn)
+    expect(spawnZoneUpdate).toBeGreaterThan(spawnConstraint)
+    expect(movementConstraint).toBeGreaterThan(movement)
+    expect(movementZoneUpdate).toBeGreaterThan(movementConstraint)
+  })
+
   it('connects Apple entries to inventory and completion', () => {
     const source = readClientSource()
 
@@ -161,5 +195,17 @@ describe('prototype scene bootstrap', () => {
     expect(source).toContain('movementJoystick.setEnabled(true)')
     expect(source).toContain('camera.attachControl(canvas, true)')
     expect(source).toContain('window.location.reload()')
+  })
+
+  it('updates visible inventory capacity for each active level', () => {
+    const source = readClientSource()
+
+    expect(source).toContain('const maximumInventorySlotCount = Math.max(')
+    expect(source).toContain(
+      'productionHud.setInventorySlotCount('
+    )
+    expect(source).toContain(
+      'questDefinition.inventorySlotCount'
+    )
   })
 })

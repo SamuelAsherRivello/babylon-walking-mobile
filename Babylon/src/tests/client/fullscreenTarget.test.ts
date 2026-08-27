@@ -12,4 +12,19 @@ describe('fullscreen target', () => {
     expect(source).toContain('document.documentElement.requestFullscreen()')
     expect(source).not.toContain('canvas.requestFullscreen()')
   })
+
+  it('restores saved mobile fullscreen during startup', () => {
+    const source = readFileSync(
+      resolve('src/client/scripts/index.ts'),
+      'utf8'
+    )
+
+    expect(source).toContain(
+      'if (debugPreferences.mobileModeEnabled) {'
+    )
+    expect(source).toContain('void restoreMobileFullscreen()')
+    expect(source).toContain(
+      "window.addEventListener('pointerdown', requestFullscreen, {"
+    )
+  })
 })

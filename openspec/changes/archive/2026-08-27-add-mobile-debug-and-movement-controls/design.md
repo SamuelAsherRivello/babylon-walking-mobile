@@ -20,6 +20,7 @@ observable behavior.
 - Keep touch gesture detection independent from rendering backend selection.
 - Keep the joystick visible through portrait crop, safe-area, orientation, and
   dynamic viewport changes.
+- Keep all permanent gameplay UI inside the visible safe-area bounds.
 - Make ownership and disposal of gesture listeners and GUI controls explicit.
 
 **Non-Goals:**
@@ -83,18 +84,25 @@ rejected because the user explicitly distinguished the clock-relative control
 from keyboard movement. Rotating the player without moving it was rejected
 because the requested result is immediate world movement.
 
-### Position against the visible portion of the portrait canvas
+### Position production UI against the visible canvas intersection
 
-Keep the joystick anchored in Babylon GUI coordinates, but calculate its
-horizontal offset from the intersection of the canvas rectangle and browser
-viewport. Add CSS safe-area values and a minimum touch margin. Recalculate
-placement after canvas `ResizeObserver`, window resize, orientation, and
-fullscreen changes using the existing resize path.
+Use one shared layout calculation for the intersection of the canvas rectangle
+and browser viewport. Convert its top, right, bottom, and left visible insets,
+plus CSS safe-area values, into Babylon GUI coordinates. The production HUD
+retains the upper-left control group and completion prompt so it can apply the
+same current layout model used by the joystick.
+
+Recalculate the model after canvas `ResizeObserver`, window resize,
+orientation, and fullscreen changes through the existing resize path. Each
+update derives absolute positions from current geometry so repeated transitions
+cannot accumulate offsets.
 
 Anchoring only to the canvas's lower-left was rejected because that point can
 be outside the viewport when the fixed 9:16 canvas is horizontally cropped.
-A DOM overlay was rejected because it would duplicate the existing Babylon GUI
-layering and disposal model.
+A joystick-only calculation was rejected because the upper-left HUD and prompt
+can also be clipped by the same fullscreen crop. A DOM overlay was rejected
+because it would duplicate the existing Babylon GUI layering and disposal
+model.
 
 ### Share the existing gameplay enabled state
 
@@ -115,6 +123,8 @@ drift from quest completion and allow movement after gameplay input stops.
   ground-plane basis or use a stable ground-plane fallback.
 - [Portrait crop hides the joystick] -> Derive placement from the visible
   canvas intersection and verify narrow mobile viewports in a real browser.
+- [Fullscreen clips other production UI] -> Share one four-edge visible-bounds
+  model across the HUD, inventory, joystick, and completion prompt.
 - [GUI controls block the completion prompt] -> Limit hit testing to the
   joystick circle and disable it with the shared gameplay input state.
 - [Analog input changes keyboard feel] -> Keep keyboard mapping and tuning
@@ -126,7 +136,7 @@ drift from quest completion and allow movement after gameplay input stops.
    integration tests.
 2. Add the gesture controller and route it through the mobile-mode profile.
 3. Add the Babylon GUI joystick and camera-relative analog input path.
-4. Connect resize, enabled-state, and disposal behavior.
+4. Connect shared visible-bounds, enabled-state, and disposal behavior.
 5. Run focused tests, all unit tests, type checking, and the production build.
 6. Verify desktop and portrait mobile under WebGPU and WebGL fallback.
 

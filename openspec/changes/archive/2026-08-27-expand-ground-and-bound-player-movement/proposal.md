@@ -7,8 +7,8 @@ keeps the player inside the intended gameplay space.
 
 ## What Changes
 
-- Expand the centered Ground from 20-by-20 to 100-by-100 while preserving its
-  current world-space texture density.
+- Expand the centered Ground from 20-by-20 to 24-by-24, or 120 percent of the
+  walkable area's size, while preserving its world-space texture density.
 - Define a centered 20-by-20 walkable rectangle matching the former Ground
   footprint.
 - Prevent the Player's footprint from crossing the walkable rectangle while

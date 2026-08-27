@@ -88,6 +88,9 @@ are committed together after engine resize to prevent mixed old and new data.
 Add the upscaling mode to the existing debug-preference model with `Off` as
 its default. Reading an older record with no mode migrates it in memory to
 `Off`; unknown values also fall back to `Off`. Reset to Defaults restores it.
+Mobile debug-mode transitions preserve the selected upscaling value so the
+phone-oriented control does not silently remove the requested performance
+trade-off.
 
 Reusing the existing record preserves one source of truth. A separate storage
 key was rejected because reset, change markers, and mobile-mode behavior could

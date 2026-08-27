@@ -96,8 +96,15 @@ describe('virtual movement joystick model', () => {
 
   it('accounts for crop, safe area, and resize scale', () => {
     const layout = calculateJoystickLayout(
-      { height: 800, left: -50 },
-      { safeAreaBottom: 20, safeAreaLeft: 12 },
+      { height: 800, left: -50, top: 0, width: 500 },
+      {
+        height: 800,
+        safeAreaBottom: 20,
+        safeAreaLeft: 12,
+        safeAreaRight: 0,
+        safeAreaTop: 0,
+        width: 400
+      },
       1600
     )
 
@@ -107,24 +114,28 @@ describe('virtual movement joystick model', () => {
 
   it('recalculates for desktop, portrait, orientation, and fullscreen', () => {
     const viewport = {
+      height: 900,
       safeAreaBottom: 0,
-      safeAreaLeft: 0
+      safeAreaLeft: 0,
+      safeAreaRight: 0,
+      safeAreaTop: 0,
+      width: 900
     }
     const desktop = calculateJoystickLayout(
-      { height: 900, left: 0 },
+      { height: 900, left: 0, top: 0, width: 506.25 },
       viewport
     )
     const portrait = calculateJoystickLayout(
-      { height: 800, left: -20 },
-      viewport
+      { height: 800, left: -20, top: 0, width: 450 },
+      { ...viewport, height: 800, width: 410 }
     )
     const landscape = calculateJoystickLayout(
-      { height: 430, left: 0 },
-      viewport
+      { height: 430, left: 0, top: 0, width: 760 },
+      { ...viewport, height: 430, width: 760 }
     )
     const fullscreen = calculateJoystickLayout(
-      { height: 1080, left: 0 },
-      viewport
+      { height: 1080, left: 0, top: 0, width: 607.5 },
+      { ...viewport, height: 1080, width: 607.5 }
     )
 
     expect(desktop.left).toBeCloseTo(42.67, 2)
@@ -222,10 +233,17 @@ describe('VirtualMovementJoystick GUI lifecycle', () => {
     const onInput = vi.fn()
     const joystick = new VirtualMovementJoystick(texture, onInput)
 
-    joystick.updateLayout(
-      { height: 800, left: -50 },
-      { safeAreaBottom: 20, safeAreaLeft: 12 }
-    )
+    joystick.updateLayout({
+      bottom: 40,
+      centerX: 0,
+      centerY: 0,
+      left: 124,
+      right: 0,
+      scale: 2,
+      top: 0,
+      visibleHeight: 1560,
+      visibleWidth: 676
+    })
     expect(joystick.root.leftInPixels).toBe(172)
     expect(joystick.root.topInPixels).toBe(-88)
 

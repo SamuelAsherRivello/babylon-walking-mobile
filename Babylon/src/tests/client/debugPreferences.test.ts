@@ -50,6 +50,7 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
+      upscalingMode: '4x' as const,
       targetFramerateIndex: 2,
       mobileModeEnabled: true
     }
@@ -72,6 +73,7 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
+      upscalingMode: '2x',
       targetFramerateIndex: 2,
       mobileModeEnabled: true
     })
@@ -86,6 +88,7 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: true,
       antialias: false,
+      upscalingMode: '4x' as const,
       targetFramerateIndex: 2,
       mobileModeEnabled: true
     })
@@ -94,20 +97,20 @@ describe('debugPreferences', () => {
       '1 = Toggle HUD',
       '2 = Toggle Inspector',
       '3 = Toggle Antialias',
-      '4 = Toggle FPS',
-      '5 = Reset to Defaults (Disk)',
-      '6 = Restart Scene',
-      '3 Finger Tap = Tog. Mobile Mode',
+      '4 = Toggle Upscaling',
+      '5 = Toggle FPS',
+      '6 = Reset to Defaults (Disk)',
+      '7 = Restart Scene',
       'IJKL = Move Camera'
     ])
     expect(labels).toEqual([
       '1 = Toggle HUD *',
       '2 = Toggle Inspector *',
       '3 = Toggle Antialias *',
-      '4 = Toggle FPS *',
-      '5 = Reset to Defaults (Disk)',
-      '6 = Restart Scene',
-      '3 Finger Tap = Tog. Mobile Mode',
+      '4 = Toggle Upscaling *',
+      '5 = Toggle FPS *',
+      '6 = Reset to Defaults (Disk)',
+      '7 = Restart Scene',
       'IJKL = Move Camera'
     ])
   })
@@ -140,6 +143,7 @@ describe('debugPreferences', () => {
       hudVisible: false,
       inspectorOpen: false,
       antialias: false,
+      upscalingMode: 'Off',
       targetFramerateIndex: 1,
       mobileModeEnabled: true
     })
@@ -150,5 +154,51 @@ describe('debugPreferences', () => {
     expect(readDebugPreferences(storage)).toEqual(
       debugPreferenceDefaults
     )
+  })
+
+  it('migrates missing and invalid modes to Off', () => {
+    const storage = new MemoryStorage()
+    const legacyPreferences = {
+      hudVisible: false,
+      inspectorOpen: true,
+      antialias: false,
+      targetFramerateIndex: 2,
+      mobileModeEnabled: false
+    }
+
+    storage.setItem(
+      'babylon.debugPreferences.v1',
+      JSON.stringify(legacyPreferences)
+    )
+    expect(readDebugPreferences(storage)).toEqual({
+      ...legacyPreferences,
+      upscalingMode: 'Off'
+    })
+
+    storage.setItem(
+      'babylon.debugPreferences.v1',
+      JSON.stringify({
+        ...legacyPreferences,
+        upscalingMode: 'invalid'
+      })
+    )
+    expect(readDebugPreferences(storage)).toEqual({
+      ...legacyPreferences,
+      upscalingMode: 'Off'
+    })
+  })
+
+  it('preserves upscaling through mobile-mode transitions', () => {
+    const storage = new MemoryStorage()
+    const preferences = {
+      ...debugPreferenceDefaults,
+      upscalingMode: '4x' as const
+    }
+
+    setMobileModePreference(preferences, storage, true)
+    expect(preferences.upscalingMode).toBe('4x')
+
+    setMobileModePreference(preferences, storage, false)
+    expect(preferences.upscalingMode).toBe('4x')
   })
 })

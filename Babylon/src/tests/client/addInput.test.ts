@@ -20,6 +20,19 @@ function click(canvas: EventTarget, x: number, y: number) {
   canvas.dispatchEvent(event)
 }
 
+function keydown(
+  windowTarget: EventTarget,
+  key: string,
+  code = ''
+) {
+  const event = new Event('keydown')
+  Object.defineProperties(event, {
+    key: { value: key },
+    code: { value: code }
+  })
+  windowTarget.dispatchEvent(event)
+}
+
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
@@ -41,5 +54,50 @@ describe('addInput canvas click', () => {
     click(canvas, 30, 40)
 
     expect(onClick).toHaveBeenCalledTimes(2)
+  })
+
+  it('uses the physical F key when Edge omits its key value', async () => {
+    const canvas = new FakeCanvas()
+    const windowTarget = new EventTarget()
+    const onFullscreen = vi.fn()
+    vi.stubGlobal('window', windowTarget)
+
+    addInput(
+      canvas as unknown as HTMLCanvasElement,
+      {} as Scene,
+      { onFullscreen }
+    )
+    keydown(windowTarget, 'Unidentified', 'KeyF')
+    await Promise.resolve()
+
+    expect(onFullscreen).toHaveBeenCalledOnce()
+  })
+
+  it('maps numbered debug actions from 1 through 7', async () => {
+    const canvas = new FakeCanvas()
+    const windowTarget = new EventTarget()
+    const actions = {
+      onHud: vi.fn(),
+      onAntialiasing: vi.fn(),
+      onUpscaling: vi.fn(),
+      onFramerate: vi.fn(),
+      onResetDefaults: vi.fn(),
+      onRestart: vi.fn()
+    }
+    vi.stubGlobal('window', windowTarget)
+
+    addInput(canvas as unknown as HTMLCanvasElement, {} as Scene, actions)
+
+    for (const key of ['1', '3', '4', '5', '6', '7']) {
+      keydown(windowTarget, key)
+    }
+    await Promise.resolve()
+
+    expect(actions.onHud).toHaveBeenCalledOnce()
+    expect(actions.onAntialiasing).toHaveBeenCalledOnce()
+    expect(actions.onUpscaling).toHaveBeenCalledOnce()
+    expect(actions.onFramerate).toHaveBeenCalledOnce()
+    expect(actions.onResetDefaults).toHaveBeenCalledOnce()
+    expect(actions.onRestart).toHaveBeenCalledOnce()
   })
 })

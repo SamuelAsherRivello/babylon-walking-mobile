@@ -15,6 +15,10 @@ import {
   type WorldZone,
   type ZoneTitleSide
 } from './zone'
+import {
+  createWalkableArea,
+  type WalkableArea
+} from './walkableArea'
 
 export type LevelPosition = {
   x: number
@@ -68,10 +72,12 @@ export type GameWorld = {
   startZone: WorldZone
   tree: TreeInstance
   trees: TreeInstance[]
+  walkableArea: WalkableArea
   zones: WorldZone[]
 }
 
 const playerSpawn: LevelPosition = { x: 0, y: 0.5, z: 0 }
+const walkableAreaSize = 20
 
 const sharedZoneDefinitions: readonly LevelZoneDefinition[] = [
   {
@@ -89,7 +95,7 @@ const sharedZoneDefinitions: readonly LevelZoneDefinition[] = [
     id: 'apple',
     isEnabled: true,
     isTriggerable: true,
-    position: { x: 0, y: 0, z: 7 },
+    position: { x: -6, y: 0, z: 7 },
     size_x: 3,
     size_z: 3,
     title: 'Apple',
@@ -112,7 +118,7 @@ function createLevelDefinition(levelNumber: number): LevelDefinition {
         appleZoneId: 'apple',
         beginningSound: 'assets/audio/sfx/levelup.wav',
         id: `quest-${levelNumber}`,
-        inventorySlotCount: 3,
+        inventorySlotCount: levelNumber,
         name: `Quest ${levelNumber}`,
         targetAppleCount: levelNumber,
         updateSound: 'assets/audio/sfx/clear.wav'
@@ -231,6 +237,13 @@ export async function createGameWorld(
   prototype.player.position.copyFrom(
     toVector3(layoutDefinition.playerSpawn)
   )
+  const walkableArea = createWalkableArea(scene, {
+    id: 'walkable',
+    player: prototype.player,
+    position: Vector3.Zero(),
+    size_x: walkableAreaSize,
+    size_z: walkableAreaSize
+  })
   const treeSpawner = new TreeSpawner(
     scene,
     baseUrl,
@@ -241,16 +254,19 @@ export async function createGameWorld(
   const trees: TreeInstance[] = []
 
   for (const zoneDefinition of layoutDefinition.zones) {
-    zones.push(createZone(scene, {
+    const zone = createZone(scene, {
       ...zoneDefinition,
       position: toVector3(zoneDefinition.position)
-    }))
+    })
+    zones.push(zone)
 
     if (zoneDefinition.model?.kind === 'tree') {
-      trees.push(await treeSpawner.addTree({
-        position: toVector3(zoneDefinition.position),
+      const tree = await treeSpawner.addTree({
+        position: Vector3.Zero(),
         type: zoneDefinition.model.type
-      }))
+      })
+      tree.root.parent = zone.root
+      trees.push(tree)
     }
   }
 
@@ -268,6 +284,7 @@ export async function createGameWorld(
     startZone,
     tree,
     trees,
+    walkableArea,
     zones
   }
 }

@@ -9,6 +9,7 @@ import { DebugHud } from './debugHud'
 import {
   debugPreferenceDefaults,
   getDebugInputLabels,
+  mobileDebugInputLabels,
   readDebugPreferences,
   resetDebugPreferences,
   setMobileModePreference,
@@ -24,6 +25,7 @@ import {
 import { OrbiterModel } from './model/orbiterModel'
 import { Orbiter } from './orbiter'
 import { ProductionHud } from './productionHud'
+import { readProductionUiViewport } from './productionHudLayout'
 import {
   createInventorySlots,
   formatHudTitle
@@ -32,6 +34,11 @@ import { createPrototypeCamera } from './prototypeScene'
 import { RenderScheduler } from './renderScheduler'
 import { createRenderingEngine } from './renderingEngineFactory'
 import {
+  RenderResolutionController,
+  cycleUpscalingMode,
+  type RenderViewport
+} from './renderUpscaling'
+import {
   RuntimeInputController,
   configureRuntimeCamera,
   runtimeInputLabels
@@ -39,7 +46,6 @@ import {
 import { SoundManager } from './soundManager'
 import { ThreeFingerTapController } from './threeFingerTap'
 import { Tweens } from './tweens'
-import { readJoystickViewport } from './virtualMovementJoystick'
 
 const backgroundMusicEnabled = false
 const backgroundMusicVolume = 0.15
@@ -102,9 +108,6 @@ async function main() {
   }
 
   const configuration = new BabylonConfigurationModel()
-  const getResolution = (
-    engine: BABYLON.Engine | BABYLON.WebGPUEngine
-  ) => `${engine.getRenderWidth()} x ${engine.getRenderHeight()}`
   const toggleFullscreen = async () => {
     if (document.fullscreenElement) {
       await document.exitFullscreen()
@@ -167,13 +170,30 @@ async function main() {
     }
   })
   engine = engineResult.engine
+  const readRenderViewport = (): RenderViewport => {
+    return {
+      width: canvas.clientWidth,
+      height: canvas.clientHeight,
+      devicePixelRatio: window.devicePixelRatio
+    }
+  }
+  const renderResolutionController = new RenderResolutionController(
+    engine,
+    configuration.adaptToDeviceRatio
+  )
+  const initialRenderingResolution =
+    renderResolutionController.synchronize(
+      readRenderViewport(),
+      debugPreferences.upscalingMode
+    )
   scene = new BABYLON.Scene(engine)
   debugHud = new DebugHud(
     configuration,
     engineResult.renderingType,
     debugInputLabels,
-    getResolution(engine),
-    runtimeInputLabels
+    initialRenderingResolution,
+    runtimeInputLabels,
+    mobileDebugInputLabels
   )
 
   if (engineResult.renderingType === 'WebGL') {
@@ -191,15 +211,18 @@ async function main() {
   })
   observer.observe(document.body, { childList: true, subtree: true })
 
-  engine.onResizeObservable.add(() => {
-    debugHud.setResolution(getResolution(engine))
-    adjustUIForInspector()
-  })
-
-  let updateMovementJoystickLayout = () => undefined
+  let updateProductionUiLayout = () => undefined
+  const synchronizeRenderResolution = () => {
+    const snapshot = renderResolutionController.synchronize(
+      readRenderViewport(),
+      debugPreferences.upscalingMode
+    )
+    debugHud.setRenderingResolution(snapshot)
+  }
   const handleResize = () => {
-    engine.resize()
-    updateMovementJoystickLayout()
+    synchronizeRenderResolution()
+    updateProductionUiLayout()
+    adjustUIForInspector()
   }
   const resizeObserver = new ResizeObserver(handleResize)
   resizeObserver.observe(canvas)
@@ -207,6 +230,8 @@ async function main() {
   debugHud.setVisible(debugPreferences.hudVisible)
   debugHud.setTargetFPS(targetFramerate)
   window.addEventListener('resize', handleResize)
+  window.addEventListener('orientationchange', handleResize)
+  document.addEventListener('fullscreenchange', handleResize)
 
   let addOrbiter = new AddOrbiterClass(
     scene,
@@ -226,6 +251,7 @@ async function main() {
   )
   const progression = new LevelProgression(levelDefinitions)
   const prototype = world.prototype
+  const walkableArea = world.walkableArea
   const zones = world.zones
   const soundManager = new SoundManager()
   const backgroundMusicUrl =
@@ -248,28 +274,35 @@ async function main() {
     window
   )
 
+  const maximumInventorySlotCount = Math.max(
+    ...levelDefinitions.flatMap(definition =>
+      definition.quests.map(quest => quest.inventorySlotCount)
+    )
+  )
   const productionHud = new ProductionHud(
     scene,
     formatHudTitle(
       progression.activeLevelDefinition.name,
       progression.activeQuestDefinition.name
     ),
-    progression.activeQuestDefinition.inventorySlotCount
+    maximumInventorySlotCount
   )
   const movementJoystick = productionHud.addMovementJoystick(
     direction => runtimeInput.setPlayerAnalogInput(direction)
   )
-  updateMovementJoystickLayout = () => {
+  updateProductionUiLayout = () => {
     const canvasRect = canvas.getBoundingClientRect()
-    movementJoystick.updateLayout(
+    productionHud.updateLayout(
       {
         height: canvasRect.height,
-        left: canvasRect.left
+        left: canvasRect.left,
+        top: canvasRect.top,
+        width: canvasRect.width
       },
-      readJoystickViewport(document.documentElement)
+      readProductionUiViewport(document.documentElement)
     )
   }
-  updateMovementJoystickLayout()
+  updateProductionUiLayout()
   const score = 0
   const appleUrl =
     `${import.meta.env.BASE_URL}assets/images/inventory/apple.png`
@@ -283,6 +316,7 @@ async function main() {
     const spawn = definition.playerSpawn
     prototype.player.position.set(spawn.x, spawn.y, spawn.z)
     prototype.player.rotation.y = 0
+    walkableArea.constrainPlayer()
 
     for (const zone of zones) {
       zone.update(prototype.player.position)
@@ -292,6 +326,9 @@ async function main() {
       definition.name,
       questDefinition.name
     ))
+    productionHud.setInventorySlotCount(
+      questDefinition.inventorySlotCount
+    )
     productionHud.setInventory(createInventorySlots(
       apple,
       progression.quest.appleCount,
@@ -402,6 +439,13 @@ async function main() {
       debugHud.setConfig()
       saveDebugPreferences()
     },
+    onUpscaling: () => {
+      debugPreferences.upscalingMode = cycleUpscalingMode(
+        debugPreferences.upscalingMode
+      )
+      synchronizeRenderResolution()
+      saveDebugPreferences()
+    },
     onFramerate: () => {
       targetFramerateIndex =
         (targetFramerateIndex + 1) % targetFramerates.length
@@ -422,6 +466,7 @@ async function main() {
       targetFramerateIndex = debugPreferences.targetFramerateIndex
       targetFramerate = targetFramerates[targetFramerateIndex]
       renderScheduler.setTargetFPS(targetFramerate)
+      synchronizeRenderResolution()
       debugHud.setVisible(debugPreferences.hudVisible)
       debugHud.setConfig()
       debugHud.setTargetFPS(targetFramerate)
@@ -438,6 +483,7 @@ async function main() {
     targetFramerateIndex = debugPreferences.targetFramerateIndex
     targetFramerate = targetFramerates[targetFramerateIndex]
     renderScheduler.setTargetFPS(targetFramerate)
+    synchronizeRenderResolution()
     debugHud.setVisible(debugPreferences.hudVisible)
     debugHud.setConfig()
     debugHud.setTargetFPS(targetFramerate)
@@ -449,6 +495,35 @@ async function main() {
     } else if (!enabled && document.fullscreenElement) {
       await document.exitFullscreen()
     }
+  }
+  const restoreMobileFullscreen = () => {
+    const requestFullscreen = async () => {
+      if (
+        !debugPreferences.mobileModeEnabled ||
+        document.fullscreenElement
+      ) {
+        return
+      }
+
+      try {
+        await setMobileFullscreen(true)
+        window.removeEventListener('pointerdown', requestFullscreen)
+      } catch (error) {
+        console.warn(
+          '[MobileMode] Saved fullscreen request failed:',
+          error
+        )
+      }
+    }
+
+    window.addEventListener('pointerdown', requestFullscreen, {
+      once: true
+    })
+    void requestFullscreen()
+  }
+
+  if (debugPreferences.mobileModeEnabled) {
+    void restoreMobileFullscreen()
   }
   const toggleMobileMode = async () => {
     const enabled = !debugPreferences.mobileModeEnabled
@@ -516,6 +591,7 @@ async function main() {
     const inputDeltaSeconds = (now - lastInputTime) / 1000
     lastInputTime = now
     runtimeInput.update(inputDeltaSeconds)
+    walkableArea.constrainPlayer()
     for (const zone of zones) {
       zone.update(prototype.player.position)
     }
@@ -546,6 +622,8 @@ async function main() {
     resizeObserver.disconnect()
     observer.disconnect()
     window.removeEventListener('resize', handleResize)
+    window.removeEventListener('orientationchange', handleResize)
+    document.removeEventListener('fullscreenchange', handleResize)
     engine.dispose()
   }
   window.addEventListener('beforeunload', disposeRuntime, {

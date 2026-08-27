@@ -5,16 +5,12 @@ import {
   Control,
   Ellipse
 } from '@babylonjs/gui'
-
-type JoystickCanvasRect = {
-  height: number
-  left: number
-}
-
-export type JoystickViewport = {
-  safeAreaBottom: number
-  safeAreaLeft: number
-}
+import {
+  calculateProductionUiLayout,
+  type ProductionUiCanvasRect,
+  type ProductionUiLayout,
+  type ProductionUiViewport
+} from './productionHudLayout'
 
 type JoystickLayout = {
   bottom: number
@@ -33,12 +29,6 @@ const outerSize = 220
 const puckSize = 88
 const layoutMargin = 24
 const deadZone = 0.15
-
-function readPixels(value: string) {
-  const pixels = Number.parseFloat(value)
-
-  return Number.isFinite(pixels) ? pixels : 0
-}
 
 export function calculateJoystickInput(
   pointer: Vector2,
@@ -70,35 +60,19 @@ export function calculateJoystickInput(
 }
 
 export function calculateJoystickLayout(
-  canvas: JoystickCanvasRect,
-  viewport: JoystickViewport,
+  canvas: ProductionUiCanvasRect,
+  viewport: ProductionUiViewport,
   targetIdealHeight = idealHeight
 ): JoystickLayout {
-  const scale = canvas.height > 0
-    ? targetIdealHeight / canvas.height
-    : 1
-  const croppedLeft = Math.max(0, -canvas.left)
+  const layout = calculateProductionUiLayout(
+    canvas,
+    viewport,
+    targetIdealHeight
+  )
 
   return {
-    bottom: (viewport.safeAreaBottom + layoutMargin) * scale,
-    left: (
-      croppedLeft + viewport.safeAreaLeft + layoutMargin
-    ) * scale
-  }
-}
-
-export function readJoystickViewport(
-  root: Element
-): JoystickViewport {
-  const style = getComputedStyle(root)
-
-  return {
-    safeAreaBottom: readPixels(
-      style.getPropertyValue('--safe-area-inset-bottom')
-    ),
-    safeAreaLeft: readPixels(
-      style.getPropertyValue('--safe-area-inset-left')
-    )
+    bottom: layout.bottom + layoutMargin * layout.scale,
+    left: layout.left + layoutMargin * layout.scale
   }
 }
 
@@ -184,17 +158,13 @@ export class VirtualMovementJoystick {
     this.endInput()
   }
 
-  public updateLayout(
-    canvas: JoystickCanvasRect,
-    viewport: JoystickViewport
-  ): void {
-    const layout = calculateJoystickLayout(
-      canvas,
-      viewport,
-      this.texture.idealHeight || idealHeight
+  public updateLayout(layout: ProductionUiLayout): void {
+    this.root.leftInPixels = (
+      layout.left + layoutMargin * layout.scale
     )
-    this.root.leftInPixels = layout.left
-    this.root.topInPixels = -layout.bottom
+    this.root.topInPixels = -(
+      layout.bottom + layoutMargin * layout.scale
+    )
   }
 
   public dispose(): void {

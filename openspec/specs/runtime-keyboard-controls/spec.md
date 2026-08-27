@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Provide distinct, discoverable keyboard controls for world-axis player
+Provide distinct, discoverable keyboard controls for camera-relative player
 movement and a player-tracking camera without conflicting default inputs.
 
 ## Requirements
@@ -10,33 +10,44 @@ movement and a player-tracking camera without conflicting default inputs.
 ### Requirement: Equivalent player movement bindings
 
 The game SHALL move the player on the ground plane with either `WASD` or the
-corresponding arrow keys, independent of the camera's current orientation.
+corresponding arrow keys. Keyboard directions SHALL match a fully displaced
+virtual joystick through the camera's current view.
 
 #### Scenario: Player moves left
 
 - **WHEN** the player holds `A` or `ArrowLeft`
-- **THEN** the player moves along the negative world X axis
+- **THEN** the player moves toward the left of the current game view
+- **AND** the movement matches the joystick at nine o'clock
 
 #### Scenario: Player moves right
 
 - **WHEN** the player holds `D` or `ArrowRight`
-- **THEN** the player moves along the positive world X axis
+- **THEN** the player moves toward the right of the current game view
+- **AND** the movement matches the joystick at three o'clock
 
 #### Scenario: Player moves up
 
 - **WHEN** the player holds `W` or `ArrowUp`
-- **THEN** the player moves along the positive world Z axis
+- **THEN** the player moves toward the top of the current game view
+- **AND** the movement matches the joystick at twelve o'clock
 
 #### Scenario: Player moves down
 
 - **WHEN** the player holds `S` or `ArrowDown`
-- **THEN** the player moves along the negative world Z axis
+- **THEN** the player moves toward the bottom of the current game view
+- **AND** the movement matches the joystick at six o'clock
 
 #### Scenario: Equivalent keys produce equivalent movement
 
 - **WHEN** the same movement duration is applied with a letter key and its
   corresponding arrow key
 - **THEN** both inputs produce the same player displacement
+
+#### Scenario: Camera orientation changes
+
+- **WHEN** the camera orbits and the player subsequently uses a movement key
+- **THEN** keyboard movement follows the new visible game-world direction
+- **AND** it continues to match the corresponding joystick direction
 
 ### Requirement: Accelerated player movement
 
@@ -133,17 +144,17 @@ Its angular speed SHALL begin at `1.2` radians per second and accelerate to
 - **WHEN** `I` or `K` would move the camera through an orbit pole
 - **THEN** the camera stops at a safe elevation limit
 
-### Requirement: Initial world orientation supports axis movement
+### Requirement: Initial world orientation supports view-relative movement
 
 The initial camera SHALL view the player from the positive-X, negative-Z
 world diagonal, and the directional light SHALL illuminate the initial world
 from the negative-Z side.
 
-#### Scenario: Player moves along negative X
+#### Scenario: Player moves toward the left of the view
 
-- **WHEN** `A` or `ArrowLeft` moves the player along negative world X from
-  the initial camera orientation
-- **THEN** the player movement appears toward the screen's upper-left
+- **WHEN** the player holds `A` or `ArrowLeft` from the initial camera
+  orientation
+- **THEN** the player movement appears toward the left of the game view
 
 #### Scenario: Initial player lighting
 
@@ -187,8 +198,8 @@ mouse-wheel zoom.
 ### Requirement: Runtime input guidance reflects active controls
 
 The lower-right runtime input panel SHALL describe the keyboard camera and
-player movement bindings without changing debug input shortcuts or debug HUD
-behavior.
+player movement bindings. Deliberate changes to numbered debug shortcuts
+SHALL NOT change player, camera, fullscreen, or touch-control bindings.
 
 #### Scenario: Runtime input panel is visible
 
@@ -201,8 +212,19 @@ behavior.
 
 #### Scenario: Debug shortcuts are displayed
 
-- **WHEN** runtime input labels are updated for the new controls
-- **THEN** the existing numbered debug input labels remain unchanged
+- **WHEN** the debug input labels are displayed
+- **THEN** `1` toggles the HUD
+- **AND** `2` toggles the Inspector
+- **AND** `3` toggles Antialiasing
+- **AND** `4` cycles Upscaling
+- **AND** `5` cycles the 30, 60, and 120 FPS targets
+- **AND** `6` resets debug preferences to defaults
+- **AND** `7` restarts the scene
+
+#### Scenario: Runtime controls remain independent
+
+- **WHEN** the numbered debug shortcuts are remapped
+- **THEN** player, camera, fullscreen, pointer, and touch inputs are unchanged
 
 ### Requirement: Gameplay keys do not invoke browser or default camera actions
 

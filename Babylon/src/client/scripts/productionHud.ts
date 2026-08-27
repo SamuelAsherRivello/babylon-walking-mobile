@@ -14,6 +14,12 @@ import {
   formatScore,
   type InventorySlots
 } from './productionHudModel'
+import {
+  calculateProductionUiLayout,
+  type ProductionUiCanvasRect,
+  type ProductionUiLayout,
+  type ProductionUiViewport
+} from './productionHudLayout'
 import { VirtualMovementJoystick } from './virtualMovementJoystick'
 
 export const UI_PADDING = 50
@@ -80,11 +86,13 @@ export class ProductionHud {
   private readonly titleText: TextBlock
   private readonly scoreText: TextBlock
   private readonly slots: Rectangle[]
+  private readonly leftGroup: StackPanel
   private readonly prompt: Rectangle
   private readonly promptTitle: TextBlock
   private readonly promptBody: TextBlock
   private readonly promptButtons: StackPanel
   private movementJoystick?: VirtualMovementJoystick
+  private layout?: ProductionUiLayout
 
   public constructor(scene: Scene, title: string, slotCount = 5) {
     this.texture = AdvancedDynamicTexture.CreateFullscreenUI(
@@ -98,7 +106,8 @@ export class ProductionHud {
     this.titleText = leftGroup.titleText
     this.scoreText = leftGroup.scoreText
     this.slots = leftGroup.slots
-    this.texture.addControl(leftGroup.control)
+    this.leftGroup = leftGroup.control
+    this.texture.addControl(this.leftGroup)
 
     const prompt = this.createPrompt()
     this.prompt = prompt.control
@@ -116,6 +125,24 @@ export class ProductionHud {
 
   public setTitle(title: string): void {
     this.titleText.text = title
+  }
+
+  public setInventorySlotCount(slotCount: number): void {
+    const visibleSlotCount = Math.min(
+      Math.max(0, Math.trunc(slotCount)),
+      this.slots.length
+    )
+
+    this.slots.forEach((slot, index) => {
+      slot.isVisible = index < visibleSlotCount
+      slot.paddingRightInPixels = index < visibleSlotCount - 1
+        ? SLOT_GAP
+        : 0
+
+      if (!slot.isVisible) {
+        slot.clearControls()
+      }
+    })
   }
 
   public setInventory(inventory: InventorySlots) {
@@ -184,8 +211,40 @@ export class ProductionHud {
       this.texture,
       onInput
     )
+    if (this.layout) {
+      this.movementJoystick.updateLayout(this.layout)
+    }
 
     return this.movementJoystick
+  }
+
+  public updateLayout(
+    canvas: ProductionUiCanvasRect,
+    viewport: ProductionUiViewport
+  ): void {
+    const layout = calculateProductionUiLayout(
+      canvas,
+      viewport,
+      this.texture.idealHeight || UI_IDEAL_HEIGHT
+    )
+    this.layout = layout
+    this.leftGroup.leftInPixels = layout.left + UI_PADDING
+    this.leftGroup.topInPixels = layout.top + UI_PADDING
+    this.leftGroup.widthInPixels = Math.min(
+      LEFT_GROUP_WIDTH,
+      Math.max(0, layout.visibleWidth - UI_PADDING * 2)
+    )
+    this.prompt.leftInPixels = layout.centerX
+    this.prompt.topInPixels = layout.centerY
+    this.prompt.widthInPixels = Math.min(
+      PROMPT_WIDTH,
+      Math.max(0, layout.visibleWidth - UI_PADDING * 2)
+    )
+    this.prompt.heightInPixels = Math.min(
+      PROMPT_HEIGHT,
+      Math.max(0, layout.visibleHeight - UI_PADDING * 2)
+    )
+    this.movementJoystick?.updateLayout(layout)
   }
 
   public dispose() {

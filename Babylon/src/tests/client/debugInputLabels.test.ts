@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   debugPreferenceDefaults,
-  getDebugInputLabels
+  getDebugInputLabels,
+  mobileDebugInputLabels
 } from '../../client/scripts/debugPreferences'
 
 describe('debug input labels', () => {
@@ -11,12 +12,13 @@ describe('debug input labels', () => {
     expect(labels).toContain('1 = Toggle HUD')
     expect(labels).toContain('2 = Toggle Inspector')
     expect(labels).toContain('3 = Toggle Antialias')
-    expect(labels).toContain('4 = Toggle FPS')
-    expect(labels).toContain('5 = Reset to Defaults (Disk)')
-    expect(labels).toContain('6 = Restart Scene')
-    expect(labels).toContain(
-      '3 Finger Tap = Tog. Mobile Mode'
-    )
-    expect(labels.at(-1)).toBe('IJKL = Move Camera')
+    expect(labels).toContain('4 = Toggle Upscaling')
+    expect(labels).toContain('5 = Toggle FPS')
+    expect(labels).toContain('6 = Reset to Defaults (Disk)')
+    expect(labels).toContain('7 = Restart Scene')
+    expect(labels).not.toContain('3 Finger Tap = Mobile Mode')
+    expect(mobileDebugInputLabels).toEqual([
+      '3 Finger Tap = Mobile Mode'
+    ])
   })
 })

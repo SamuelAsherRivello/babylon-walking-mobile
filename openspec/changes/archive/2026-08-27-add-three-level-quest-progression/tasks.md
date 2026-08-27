@@ -46,10 +46,10 @@
 
 ## 5. Level-Specific Inventory Capacity
 
-- [ ] 5.1 Add failing definition, HUD, and bootstrap tests for exactly one,
+- [x] 5.1 Add failing definition, HUD, and bootstrap tests for exactly one,
   two, and three visible inventory slots in Levels 1, 2, and 3 respectively.
-- [ ] 5.2 Set each level definition's inventory capacity to its level number
+- [x] 5.2 Set each level definition's inventory capacity to its level number
   and update the HUD to hide unavailable controls without rebuilding them;
   verify the focused tests pass.
-- [ ] 5.3 Re-run the full unit suite, TypeScript checks, production build, and
+- [x] 5.3 Re-run the full unit suite, TypeScript checks, production build, and
   80-character scan after implementing the capacity refinement.

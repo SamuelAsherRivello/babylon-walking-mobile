@@ -1,7 +1,13 @@
+import {
+  isUpscalingMode,
+  type UpscalingMode
+} from './renderUpscaling'
+
 export type DebugPreferences = {
   hudVisible: boolean
   inspectorOpen: boolean
   antialias: boolean
+  upscalingMode: UpscalingMode
   targetFramerateIndex: number
   mobileModeEnabled: boolean
 }
@@ -10,9 +16,14 @@ export const debugPreferenceDefaults: DebugPreferences = {
   hudVisible: true,
   inspectorOpen: false,
   antialias: true,
+  upscalingMode: 'Off',
   targetFramerateIndex: 1,
   mobileModeEnabled: false
 }
+
+export const mobileDebugInputLabels = [
+  '3 Finger Tap = Mobile Mode'
+]
 
 const debugPreferenceKey = 'babylon.debugPreferences.v1'
 
@@ -31,23 +42,36 @@ export function getDebugInputLabels(preferences: DebugPreferences) {
     `3 = Toggle Antialias${changedMarker(
       preferences.antialias !== debugPreferenceDefaults.antialias
     )}`,
-    `4 = Toggle FPS${changedMarker(
+    `4 = Toggle Upscaling${changedMarker(
+      preferences.upscalingMode !==
+        debugPreferenceDefaults.upscalingMode
+    )}`,
+    `5 = Toggle FPS${changedMarker(
       preferences.targetFramerateIndex !==
         debugPreferenceDefaults.targetFramerateIndex
     )}`,
-    '5 = Reset to Defaults (Disk)',
-    '6 = Restart Scene',
-    '3 Finger Tap = Tog. Mobile Mode',
+    '6 = Reset to Defaults (Disk)',
+    '7 = Restart Scene',
     'IJKL = Move Camera'
   ]
 }
 
-function isValidPreference(value: unknown): value is DebugPreferences {
+type StoredDebugPreferences = Omit<
+  DebugPreferences,
+  'mobileModeEnabled' | 'upscalingMode'
+> & {
+  mobileModeEnabled?: boolean
+  upscalingMode?: unknown
+}
+
+function isValidPreference(
+  value: unknown
+): value is StoredDebugPreferences {
   if (!value || typeof value !== 'object') {
     return false
   }
 
-  const preference = value as Partial<DebugPreferences>
+  const preference = value as Partial<StoredDebugPreferences>
   const targetFramerateIndex = preference.targetFramerateIndex
 
   return (
@@ -87,6 +111,9 @@ export function readDebugPreferences(
 
     return {
       ...parsedValue,
+      upscalingMode: isUpscalingMode(parsedValue.upscalingMode)
+        ? parsedValue.upscalingMode
+        : 'Off',
       mobileModeEnabled: parsedValue.mobileModeEnabled ?? false
     }
   } catch {
@@ -126,7 +153,9 @@ export function setMobileModePreference(
   storage: Storage | undefined,
   enabled: boolean
 ) {
+  const upscalingMode = preferences.upscalingMode
   Object.assign(preferences, debugPreferenceDefaults)
+  preferences.upscalingMode = upscalingMode
 
   if (enabled) {
     preferences.hudVisible = false

@@ -4,9 +4,9 @@
   pointers, movement and duration rejection, cancellation, blur, single-toggle
   emission, and disposal; run the focused test and verify it fails for missing
   gesture behavior.
-- [x] 1.2 Add initial debug-input label and integration tests for the gesture
-  guidance and routing; run the focused tests and verify they fail before
-  implementation.
+- [x] 1.2 Add initial debug-input label and integration tests for the separate
+  PC and mobile panels, gesture guidance, and routing; run the focused tests
+  and verify they fail before implementation.
 - [x] 1.3 Extend preference tests for default-visible state and visibility
   persistence from both keyboard and gesture paths; run the focused tests and
   verify they fail only for the missing integration.
@@ -16,9 +16,9 @@
 - [x] 2.1 Implement the bounded three-finger tap controller with pointer,
   cancellation, blur, and disposal handling; verify the focused controller
   test from task 1.1 passes.
-- [x] 2.2 Add the exact Debug Input guidance and connect gesture toggles to the
-  existing preference-save path; verify the focused label, integration, and
-  preference tests from tasks 1.2 and 1.3 pass.
+- [x] 2.2 Add the exact PC and mobile Debug Input panels and connect gesture
+  toggles to the existing preference-save path; verify the focused label,
+  integration, and preference tests from tasks 1.2 and 1.3 pass.
 
 ## 3. Joystick Movement Tests
 
@@ -65,7 +65,8 @@
   and the WebGPU rendering label.
 - [ ] 5.5 In Android Chrome portrait mode, verify the mobile-mode toggle,
   persisted hidden state, twelve-o'clock movement, safe-area placement,
-  orientation changes, completion prompt input, and WebGPU rendering.
+  orientation changes, all production UI bounds, completion prompt input, and
+  WebGPU rendering.
 - [x] 5.6 Force or use a supported WebGL fallback browser context and verify
   gesture, persistence, joystick visuals, movement, and prompt behavior remain
   equivalent.
@@ -80,5 +81,21 @@
   release or cancellation, and a required new in-circle press.
 - [x] 6.4 Capture the active joystick pointer through release and correct the
   reversed left and right camera-relative movement mapping.
-- [ ] 6.5 Re-run automated and real-browser verification for the revised
+- [x] 6.5 Re-run automated and real-browser verification for the revised
   behavior on WebGPU and WebGL fallback.
+
+## 7. Fullscreen Production UI Bounds
+
+- [x] 7.1 Add failing focused layout and production HUD tests for a cropped
+  portrait fullscreen viewport, all four safe-area insets, prompt containment,
+  and repeated fullscreen and orientation transitions.
+- [x] 7.2 Implement one shared visible-canvas layout calculation and reposition
+  the upper-left HUD, inventory, joystick, and completion prompt without
+  duplicating viewport math.
+- [x] 7.3 Connect the shared layout update to the existing resize, fullscreen,
+  and orientation path and verify listener and resource cleanup.
+- [x] 7.4 Run focused and complete unit tests, `npm.cmd run check`, and
+  `npm.cmd run build`.
+- [ ] 7.5 In Android Chrome portrait fullscreen, verify the title, score,
+  inventory, joystick, and completion prompt remain fully in bounds under
+  WebGPU, then repeat in a supported or emulated WebGL fallback context.

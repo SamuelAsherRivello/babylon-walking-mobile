@@ -7,15 +7,16 @@ the smaller world-space rectangle in which the player can walk.
 
 ### Requirement: Ground extends beyond the walkable area
 
-The game SHALL render a centered 100-by-100 Ground on the world X/Z plane.
-The Ground texture SHALL retain the same world-space tile density that it had
-on the previous 20-by-20 Ground.
+The game SHALL render a centered 24-by-24 Ground on the world X/Z plane. Each
+Ground dimension SHALL be 120 percent of the corresponding 20-unit walkable
+dimension. The Ground texture SHALL retain the same world-space tile density
+that it had on the previous 20-by-20 Ground.
 
 #### Scenario: Prototype world starts
 
 - **WHEN** the prototype world finishes loading
-- **THEN** the Ground extends 50 world units from the origin on X and Z
-- **AND** the Ground extends substantially beyond the visible walkable area
+- **THEN** the Ground extends 12 world units from the origin on X and Z
+- **AND** two Ground units remain visible outside each walkable-area edge
 - **AND** its texture does not appear enlarged or stretched
 
 ### Requirement: Walkable area matches the former Ground footprint

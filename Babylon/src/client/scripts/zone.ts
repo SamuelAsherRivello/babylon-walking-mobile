@@ -4,15 +4,19 @@ import {
   Mesh,
   MeshBuilder,
   Observable,
-  Scene,
   StandardMaterial,
   TransformNode,
-  Vector3
+  Vector3,
+  type Scene
 } from '@babylonjs/core'
 import {
   AdvancedDynamicTexture,
   TextBlock
 } from '@babylonjs/gui'
+import {
+  createGroundAreaVisual,
+  type GroundAreaVisual
+} from './groundAreaVisual'
 
 export type ZoneOptions = {
   id: string
@@ -37,14 +41,11 @@ export const zoneBackgroundColorNegation = new Color3(0.78, 0.08, 0.08)
 export const zoneIdleColor = zoneBackgroundColorDefault
 export const zoneOccupiedColor = zoneBackgroundColorConfirmation
 
-const fillHeight = 0.01
-const borderHeight = 0.02
 const titleHeight = 0.025
 const fillAlpha = 0.42
 const titleDepth = 0.55
 const titleGap = 0.15
 const approvedTitleSize = 2
-const borderColor = new Color3(0.62, 0.72, 0.18)
 
 function requireText(value: string, name: string): string {
   const normalized = value.trim()
@@ -82,44 +83,6 @@ function requireColor(color: Color3, name: string): Color3 {
   }
 
   return color.clone()
-}
-
-function createBorderSegments(
-  scene: Scene,
-  id: string,
-  width: number,
-  depth: number,
-  parent: TransformNode
-): LinesMesh[] {
-  const halfWidth = width / 2
-  const halfDepth = depth / 2
-  const corners = [
-    new Vector3(-halfWidth, borderHeight, -halfDepth),
-    new Vector3(halfWidth, borderHeight, -halfDepth),
-    new Vector3(halfWidth, borderHeight, halfDepth),
-    new Vector3(-halfWidth, borderHeight, halfDepth)
-  ]
-
-  return corners.map((start, index) => {
-    const end = corners[(index + 1) % corners.length]
-    const segment = MeshBuilder.CreateDashedLines(
-      `${id}-zone-border-${index}`,
-      {
-        points: [start, end],
-        dashSize: 0.18,
-        gapSize: 0.12
-      },
-      scene
-    )
-
-    segment.parent = parent
-    segment.color.copyFrom(borderColor)
-    segment.alpha = 0.9
-    segment.isPickable = false
-    segment.receiveShadows = false
-
-    return segment
-  })
 }
 
 function createTitle(
@@ -211,7 +174,8 @@ export class WorldZone {
     public readonly borderSegments: LinesMesh[],
     public readonly titleMesh: Mesh,
     public readonly titleText: TextBlock,
-    private readonly titleTexture: AdvancedDynamicTexture | null
+    private readonly titleTexture: AdvancedDynamicTexture | null,
+    private readonly visual: GroundAreaVisual
   ) {}
 
   public contains(position: Vector3): boolean {
@@ -256,17 +220,14 @@ export class WorldZone {
   }
 
   private applyBackground(color: Color3): void {
-    this.fillMaterial.diffuseColor.copyFrom(color)
-    this.fillMaterial.emissiveColor.copyFrom(color)
-    this.fillMaterial.alpha = fillAlpha
+    this.visual.setFillColor(color, fillAlpha)
   }
 
   public dispose(): void {
     this.onEnteredObservable.clear()
     this.onExitedObservable.clear()
     this.titleTexture?.dispose()
-    this.fillMaterial.dispose()
-    this.root.dispose()
+    this.visual.dispose()
   }
 }
 
@@ -298,38 +259,26 @@ export function createZone(
   )
   const isEnabled = options.isEnabled ?? true
   const isTriggerable = options.isTriggerable ?? true
-  const root = new TransformNode(`${id}-zone`, scene)
-  root.position.copyFrom(position)
-
-  const fill = MeshBuilder.CreateGround(
-    `${id}-zone-fill`,
-    { width: size_x, height: size_z, subdivisions: 1 },
-    scene
-  )
-  fill.parent = root
-  fill.position.y = fillHeight
-  fill.isPickable = false
-  fill.receiveShadows = false
-
-  const fillMaterial = new StandardMaterial(
-    `${id}-zone-fill-material`,
-    scene
-  )
-  fillMaterial.diffuseColor.copyFrom(backgroundColorDefault)
-  fillMaterial.emissiveColor.copyFrom(backgroundColorDefault)
-  fillMaterial.specularColor.copyFrom(Color3.Black())
-  fillMaterial.alpha = fillAlpha
-  fillMaterial.disableLighting = true
-  fillMaterial.backFaceCulling = false
-  fill.material = fillMaterial
-
-  const borderSegments = createBorderSegments(
-    scene,
-    id,
+  const visual = createGroundAreaVisual(scene, {
+    id: `${id}-zone`,
+    position,
     size_x,
     size_z,
-    root
-  )
+    fill: {
+      alpha: fillAlpha,
+      color: backgroundColorDefault
+    }
+  })
+  const fill = visual.fill
+  const fillMaterial = visual.fillMaterial
+
+  if (!fill || !fillMaterial) {
+    visual.dispose()
+    throw new Error('zone ground-area visual requires a fill')
+  }
+
+  const root = visual.root
+  const borderSegments = visual.borderSegments
   const titleResult = createTitle(
     scene,
     id,
@@ -357,6 +306,7 @@ export function createZone(
     borderSegments,
     titleResult.mesh,
     titleResult.text,
-    titleResult.texture
+    titleResult.texture,
+    visual
   )
 }

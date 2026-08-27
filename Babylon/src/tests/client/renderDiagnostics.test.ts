@@ -18,10 +18,17 @@ const bootstrapSource = readFileSync(
 )
 
 describe('render diagnostics', () => {
-  it('shows the backend, resolution, target, and measured FPS', () => {
+  it('shows backend, resolutions, scale, target, and measured FPS', () => {
     expect(debugHudSource).toContain('Type = ${renderingType}')
-    expect(debugHudSource).toContain('Resolution = ${resolution}')
+    expect(debugHudSource).toContain(
+      'Total Rez = ${displayResolution}'
+    )
+    expect(debugHudSource).toContain(
+      'Render Rez = ${renderResolution}'
+    )
+    expect(debugHudSource).toContain('Upscaling = ${upscalingMode}')
     expect(debugHudSource).toContain('FPS = ${fps}/${targetFPS}')
+    expect(debugHudSource).toContain('setRenderingResolution(')
     expect(debugHudSource).toContain('setTargetFPS(targetFPS: number)')
     expect(debugHudSource).toContain('setFPS(fps: number)')
   })

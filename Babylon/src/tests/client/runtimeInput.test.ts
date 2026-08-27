@@ -158,39 +158,75 @@ describe('runtime player input', () => {
   })
 
   it.each([
-    ['KeyA', 'ArrowLeft', 'x', -1],
-    ['KeyD', 'ArrowRight', 'x', 1],
-    ['KeyW', 'ArrowUp', 'z', 1],
-    ['KeyS', 'ArrowDown', 'z', -1]
+    ['KeyA', 'ArrowLeft', 'right', -1],
+    ['KeyD', 'ArrowRight', 'right', 1],
+    ['KeyW', 'ArrowUp', 'forward', 1],
+    ['KeyS', 'ArrowDown', 'forward', -1]
   ] as const)(
-    'maps %s and %s to the same world axis',
-    (letter, arrow, axis, sign) => {
+    'maps %s and %s through the current camera view',
+    (letter, arrow, basisName, sign) => {
       const letterHarness = runHeldInput(letter, 0.1, 1)
       const arrowHarness = runHeldInput(arrow, 0.1, 1)
-      const letterPosition = letterHarness.player.position[axis]
-      const arrowPosition = arrowHarness.player.position[axis]
+      const expected = getViewBasis(letterHarness.camera)[basisName]
+        .scale(sign)
+      const letterDirection = new Vector2(
+        letterHarness.player.position.x,
+        letterHarness.player.position.z
+      ).normalize()
+      const arrowDirection = new Vector2(
+        arrowHarness.player.position.x,
+        arrowHarness.player.position.z
+      ).normalize()
 
-      expect(Math.sign(letterPosition)).toBe(sign)
-      expect(arrowPosition).toBeCloseTo(letterPosition)
+      expect(Vector2.Dot(letterDirection, expected)).toBeCloseTo(1)
+      expect(Vector2.Dot(arrowDirection, expected)).toBeCloseTo(1)
+      expect(arrowHarness.player.position).toEqual(
+        letterHarness.player.position
+      )
     }
   )
 
+  it('moves Up exactly like a full joystick at twelve oclock', () => {
+    const keyboard = createHarness()
+    const joystick = createHarness()
+    keyboard.camera.alpha += Math.PI / 2
+    joystick.camera.alpha += Math.PI / 2
+
+    dispatchKey(keyboard.target, 'keydown', 'ArrowUp')
+    joystick.controller.setPlayerAnalogInput(new Vector2(0, 1))
+    keyboard.controller.update(0.1)
+    joystick.controller.update(0.1)
+
+    expect(keyboard.player.position).toEqual(joystick.player.position)
+    expect(keyboard.player.rotation.y).toBe(joystick.player.rotation.y)
+    expect(keyboard.controller.playerSpeed).toBe(
+      joystick.controller.playerSpeed
+    )
+  })
+
   it('turns over several frames toward a new travel heading', () => {
-    const { controller, player, target } = createHarness()
+    const { camera, controller, player, target } = createHarness()
     dispatchKey(target, 'keydown', 'KeyW')
-    controller.update(1 / 60)
+    advance(controller, Math.PI / playerTurnSpeed)
     dispatchKey(target, 'keyup', 'KeyW')
     dispatchKey(target, 'keydown', 'KeyD')
+    const targetDirection = getViewBasis(camera).right
+    const targetHeading = Math.atan2(
+      targetDirection.x,
+      targetDirection.y
+    )
 
     controller.update(1 / 60)
 
-    expect(player.position.x).toBeGreaterThan(0)
-    expect(player.rotation.y).toBeGreaterThan(0)
-    expect(player.rotation.y).toBeLessThan(Math.PI / 2)
+    expect(
+      angularDistance(player.rotation.y, targetHeading)
+    ).toBeGreaterThan(0)
 
     advance(controller, Math.PI / 2 / playerTurnSpeed)
 
-    expect(player.rotation.y).toBeCloseTo(Math.PI / 2)
+    expect(
+      angularDistance(player.rotation.y, targetHeading)
+    ).toBeCloseTo(0)
   })
 
   it('turns at the same rate across different update rates', () => {
@@ -203,18 +239,24 @@ describe('runtime player input', () => {
   })
 
   it.each([
-    ['KeyW', 'KeyS', Math.PI],
-    ['KeyS', 'KeyW', 0],
-    ['KeyA', 'KeyD', Math.PI / 2],
-    ['KeyD', 'KeyA', -Math.PI / 2]
+    ['KeyW', 'KeyS', 'forward', -1],
+    ['KeyS', 'KeyW', 'forward', 1],
+    ['KeyA', 'KeyD', 'right', 1],
+    ['KeyD', 'KeyA', 'right', -1]
   ] as const)(
     'gradually reverses from %s to %s',
-    (firstCode, secondCode, targetHeading) => {
-      const { controller, player, target } = createHarness()
+    (firstCode, secondCode, basisName, sign) => {
+      const { camera, controller, player, target } = createHarness()
       dispatchKey(target, 'keydown', firstCode)
       advance(controller, Math.PI / playerTurnSpeed)
       dispatchKey(target, 'keyup', firstCode)
       dispatchKey(target, 'keydown', secondCode)
+      const targetDirection = getViewBasis(camera)[basisName]
+        .scale(sign)
+      const targetHeading = Math.atan2(
+        targetDirection.x,
+        targetDirection.y
+      )
 
       controller.update(1 / 60)
 
@@ -231,35 +273,47 @@ describe('runtime player input', () => {
   )
 
   it('faces a diagonal heading and retains it while slowing down', () => {
-    const { controller, player, target } = createHarness()
+    const { camera, controller, player, target } = createHarness()
     dispatchKey(target, 'keydown', 'KeyW')
     dispatchKey(target, 'keydown', 'KeyD')
-    controller.update(0.1)
+    advance(controller, Math.PI / 2 / playerTurnSpeed)
+    const basis = getViewBasis(camera)
+    const targetDirection = basis.forward.add(basis.right).normalize()
+    const targetHeading = Math.atan2(
+      targetDirection.x,
+      targetDirection.y
+    )
 
-    expect(player.rotation.y).toBeCloseTo(Math.PI / 4)
+    expect(player.rotation.y).toBeCloseTo(targetHeading)
 
     dispatchKey(target, 'keyup', 'KeyW')
     dispatchKey(target, 'keyup', 'KeyD')
     controller.update(0.1)
 
-    expect(player.rotation.y).toBeCloseTo(Math.PI / 4)
+    expect(player.rotation.y).toBeCloseTo(targetHeading)
   })
 
   it('moves on a tap that ends before the next update', () => {
-    const { controller, player, target } = createHarness()
+    const { camera, controller, player, target } = createHarness()
+    const expected = getViewBasis(camera).forward
 
     dispatchKey(target, 'keydown', 'KeyW')
     dispatchKey(target, 'keyup', 'KeyW')
     controller.update(1 / 60)
 
-    expect(player.position.z).toBeGreaterThan(0)
+    const displacement = new Vector2(
+      player.position.x,
+      player.position.z
+    )
+    expect(Vector2.Dot(displacement, expected)).toBeGreaterThan(0)
     expect(controller.playerSpeed).toBeGreaterThanOrEqual(
       playerMotionTuning.baseSpeed
     )
   })
 
   it('accelerates while held and decelerates after release', () => {
-    const { controller, player, target } = createHarness()
+    const { camera, controller, player, target } = createHarness()
+    const expected = getViewBasis(camera).forward
 
     dispatchKey(target, 'keydown', 'KeyW')
     advance(controller, playerMotionTuning.accelerationSeconds)
@@ -269,10 +323,16 @@ describe('runtime player input', () => {
     )
 
     dispatchKey(target, 'keyup', 'KeyW')
-    const releasePosition = player.position.z
+    const releasePosition = player.position.clone()
     controller.update(0.1)
+    const releaseDisplacement = new Vector2(
+      player.position.x - releasePosition.x,
+      player.position.z - releasePosition.z
+    )
 
-    expect(player.position.z).toBeGreaterThan(releasePosition)
+    expect(
+      Vector2.Dot(releaseDisplacement, expected)
+    ).toBeGreaterThan(0)
     expect(controller.playerSpeed).toBeGreaterThan(0)
 
     advance(controller, 0.15)
@@ -288,9 +348,14 @@ describe('runtime player input', () => {
     diagonal.controller.update(0.1)
     const straightDistance = straight.player.position.length()
     const diagonalDistance = diagonal.player.position.length()
+    const basis = getViewBasis(diagonal.camera)
+    const expected = basis.forward.add(basis.right).normalize()
+    const displacement = new Vector2(
+      diagonal.player.position.x,
+      diagonal.player.position.z
+    ).normalize()
 
-    expect(diagonal.player.position.x).toBeGreaterThan(0)
-    expect(diagonal.player.position.z).toBeGreaterThan(0)
+    expect(Vector2.Dot(displacement, expected)).toBeCloseTo(1)
     expect(diagonalDistance).toBeCloseTo(straightDistance)
   })
 
@@ -472,8 +537,15 @@ describe('runtime joystick input', () => {
 
     controller.setPlayerAnalogInput(Vector2.Zero())
     const releasePosition = player.position.clone()
+    const keyboardDirection = getViewBasis(camera).right.scale(-1)
     controller.update(0.1)
-    expect(player.position.x).toBeLessThan(releasePosition.x)
+    const releaseDisplacement = new Vector2(
+      player.position.x - releasePosition.x,
+      player.position.z - releasePosition.z
+    )
+    expect(
+      Vector2.Dot(releaseDisplacement, keyboardDirection)
+    ).toBeGreaterThan(0)
   })
 })
 
@@ -547,11 +619,16 @@ describe('runtime camera input', () => {
   it('moves the player and camera simultaneously', () => {
     const { camera, controller, player, target } = createHarness()
     const alpha = camera.alpha
+    const expected = getViewBasis(camera).forward
     dispatchKey(target, 'keydown', 'KeyW')
     dispatchKey(target, 'keydown', 'KeyJ')
     controller.update(0.1)
+    const displacement = new Vector2(
+      player.position.x,
+      player.position.z
+    )
 
-    expect(player.position.z).toBeGreaterThan(0)
+    expect(Vector2.Dot(displacement, expected)).toBeGreaterThan(0)
     expect(camera.alpha).toBeLessThan(alpha)
   })
 })
@@ -619,6 +696,17 @@ describe('runtime input lifecycle and camera configuration', () => {
     player.computeWorldMatrix(true)
     camera.getViewMatrix(true)
     expect(camera.getTarget().asArray()).toEqual([2, 0.5, -3])
+  })
+
+  it('limits camera zoom without changing the current radius', () => {
+    const { camera, player } = createHarness()
+    const initialRadius = camera.radius
+
+    configureRuntimeCamera(camera, player)
+
+    expect(camera.lowerRadiusLimit).toBe(7)
+    expect(camera.upperRadiusLimit).toBe(72)
+    expect(camera.radius).toBe(initialRadius)
   })
 
   it(

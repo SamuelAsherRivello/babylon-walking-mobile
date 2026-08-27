@@ -39,8 +39,8 @@ describe('prototype scene', () => {
     expect(playerSize.asArray()).toEqual([1, 1, 1])
     expect(prototype.ground.name).toBe('Ground')
     expect(prototype.ground.position.asArray()).toEqual([0, 0, 0])
-    expect(groundSize.x).toBeCloseTo(20)
-    expect(groundSize.z).toBeCloseTo(20)
+    expect(groundSize.x).toBeCloseTo(24)
+    expect(groundSize.z).toBeCloseTo(24)
     expect(prototype.playerMaterial.name).toBe('PlayerMaterial')
     expect(prototype.groundMaterial.name).toBe('GroundMaterial')
     expect(prototype.playerMaterial).not.toBe(prototype.groundMaterial)
@@ -52,8 +52,8 @@ describe('prototype scene', () => {
     )).toBe(true)
     expect(prototype.playerMaterial.diffuseColor).toEqual(Color3.White())
     expect(prototype.groundMaterial.diffuseColor).toEqual(Color3.White())
-    expect(prototype.groundTexture.uScale).toBeGreaterThan(1)
-    expect(prototype.groundTexture.vScale).toBeGreaterThan(1)
+    expect(prototype.groundTexture.uScale).toBe(12)
+    expect(prototype.groundTexture.vScale).toBe(12)
   })
 
   it('creates the elevated diagonal perspective camera', () => {

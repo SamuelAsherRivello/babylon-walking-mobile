@@ -1,9 +1,11 @@
+# Virtual Player Joystick Specification
+
 ## Purpose
 
 Provide persistent pointer and touch movement through a visible virtual
 joystick whose directions follow the player's current view of the game world.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Virtual movement joystick is always available
 
@@ -26,6 +28,32 @@ orientation changes.
 
 - **WHEN** the browser viewport, orientation, or visible canvas crop changes
 - **THEN** the joystick remains fully visible within the lower-left safe area
+
+### Requirement: Permanent gameplay UI remains within visible bounds
+
+The game SHALL keep the title, score, inventory label, inventory slots,
+virtual joystick, and completion prompt fully inside the intersection of the
+canvas and browser viewport. These controls SHALL respect the top, right,
+bottom, and left safe-area insets after fullscreen, viewport, crop, or
+orientation changes.
+
+#### Scenario: Portrait fullscreen crops the canvas
+
+- **WHEN** portrait fullscreen makes the canvas wider than the visible viewport
+- **THEN** the upper-left HUD and inventory remain fully visible
+- **AND** the lower-left joystick remains fully visible
+
+#### Scenario: Completion prompt is shown in a cropped viewport
+
+- **WHEN** gameplay displays the completion prompt after a viewport change
+- **THEN** the prompt is fully contained by the visible safe-area bounds
+
+#### Scenario: Visible bounds change repeatedly
+
+- **WHEN** the browser enters or exits fullscreen or changes orientation more
+  than once
+- **THEN** every permanent gameplay control is repositioned from current bounds
+- **AND** no cumulative position drift occurs
 
 ### Requirement: Joystick movement follows the visible game world
 
@@ -91,17 +119,21 @@ SHALL again require pointer down within the outer circle.
 - **THEN** movement returns to center immediately
 - **AND** movement cannot restart until a new press begins inside the circle
 
-### Requirement: Keyboard movement remains unchanged
+### Requirement: Keyboard movement matches joystick directions
 
-Existing keyboard movement SHALL retain its fixed world-axis mapping and
-tuning. While the joystick is actively displaced outside its dead zone, the
-joystick SHALL control player direction; otherwise keyboard movement SHALL
-continue normally.
+Keyboard movement SHALL use the same camera-relative direction mapping and
+full-strength tuning as the virtual joystick. While the joystick is actively
+displaced outside its dead zone, the joystick SHALL control player direction;
+otherwise keyboard movement SHALL continue normally.
 
 #### Scenario: Keyboard-only movement
 
 - **WHEN** the joystick is centered and the player uses a movement key
-- **THEN** the existing fixed world-axis keyboard movement is unchanged
+- **THEN** the movement key matches the corresponding joystick direction
+- **AND** `W` or `ArrowUp` matches twelve o'clock
+- **AND** `D` or `ArrowRight` matches three o'clock
+- **AND** `S` or `ArrowDown` matches six o'clock
+- **AND** `A` or `ArrowLeft` matches nine o'clock
 
 #### Scenario: Joystick is active with a held key
 

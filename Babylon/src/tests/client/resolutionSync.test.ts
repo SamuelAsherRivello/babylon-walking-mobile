@@ -9,11 +9,10 @@ describe('custom resolution display', () => {
       'utf8'
     )
 
-    expect(source).toContain('engine.onResizeObservable.add')
-    expect(source).toContain(
-      'debugHud.setResolution(getResolution(engine))'
-    )
-    expect(source).toContain('updateMovementJoystickLayout()')
-    expect(source).toContain('readJoystickViewport(')
+    expect(source).toContain('synchronizeRenderResolution()')
+    expect(source).toContain('renderResolutionController.synchronize(')
+    expect(source).toContain('debugHud.setRenderingResolution(')
+    expect(source).toContain('updateProductionUiLayout()')
+    expect(source).toContain('readProductionUiViewport(')
   })
 })

@@ -85,6 +85,18 @@ describe('production HUD', () => {
     expect(source).toContain('this.titleText.text = title')
   })
 
+  it('shows only the active level inventory slots', () => {
+    const source = readProductionHud()
+
+    expect(source).toContain(
+      'public setInventorySlotCount(slotCount: number)'
+    )
+    expect(source).toContain('slot.isVisible = index < visibleSlotCount')
+    expect(source).toContain(
+      'slot.paddingRightInPixels = index < visibleSlotCount - 1'
+    )
+  })
+
   it('owns one movement joystick on its shared texture', () => {
     const source = readProductionHud()
 
@@ -125,5 +137,22 @@ describe('production HUD', () => {
     expect(scoreIndex).toBeGreaterThan(titleIndex)
     expect(labelIndex).toBeGreaterThan(scoreIndex)
     expect(slotsIndex).toBeGreaterThan(labelIndex)
+  })
+
+  it('applies one visible layout to the HUD, prompt, and joystick', () => {
+    const source = readProductionHud()
+
+    expect(source).toContain('private readonly leftGroup: StackPanel')
+    expect(source).toContain('public updateLayout(')
+    expect(source).toContain('calculateProductionUiLayout(')
+    expect(source).toContain(
+      'this.leftGroup.leftInPixels = layout.left + UI_PADDING'
+    )
+    expect(source).toContain(
+      'this.leftGroup.topInPixels = layout.top + UI_PADDING'
+    )
+    expect(source).toContain('this.prompt.leftInPixels = layout.centerX')
+    expect(source).toContain('this.prompt.topInPixels = layout.centerY')
+    expect(source).toContain('this.movementJoystick?.updateLayout(layout)')
   })
 })
