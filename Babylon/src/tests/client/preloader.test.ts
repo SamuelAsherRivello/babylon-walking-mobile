@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const source = readFileSync(
-  resolve('src/client/scripts/preloader.ts'),
+  resolve('src/client/scripts/view/2d/preloader.ts'),
   'utf8'
 )
 

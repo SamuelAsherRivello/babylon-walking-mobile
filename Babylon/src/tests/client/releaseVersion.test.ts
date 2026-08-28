@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   loadReleaseVersion,
   resolveReleaseVersion
-} from '../../client/scripts/releaseVersion'
+} from '../../client/scripts/model/releaseVersion'
 
 describe('release version', () => {
   it('uses the exact stored release tag', () => {

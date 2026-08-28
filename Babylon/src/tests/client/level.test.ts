@@ -8,10 +8,10 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   createGameWorld,
   levelDefinitions
-} from '../../client/scripts/level'
+} from '../../client/scripts/model/level'
 import type {
   TreeAssetLoader
-} from '../../client/scripts/treeSpawner'
+} from '../../client/scripts/view/3d/treeSpawner'
 
 const engines: NullEngine[] = []
 const scenes: Scene[] = []

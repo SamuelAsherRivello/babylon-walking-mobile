@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { SoundManager } from '../../client/scripts/soundManager'
+import { SoundManager } from '../../client/scripts/view/3d/soundManager'
 
 class FakeAudio extends EventTarget {
   public currentTime = 0

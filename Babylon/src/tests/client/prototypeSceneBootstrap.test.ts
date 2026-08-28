@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const readClientSource = () => readFileSync(
-  resolve('src/client/scripts/index.ts'),
+  resolve('src/client/scripts/controller/index.ts'),
   'utf8'
 )
 
@@ -15,7 +15,7 @@ describe('prototype scene bootstrap', () => {
     const source = readClientSource()
 
     expect(source).toContain(
-      "import { loadReleaseVersion } from './releaseVersion'"
+      "import { loadReleaseVersion } from '../model/releaseVersion'"
     )
     expect(source).toContain('await loadReleaseVersion(')
     expect(source).toContain('import.meta.env.BASE_URL')

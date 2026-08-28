@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const readClientSource = () => readFileSync(
-  resolve('src/client/scripts/index.ts'),
+  resolve('src/client/scripts/controller/index.ts'),
   'utf8'
 )
 
@@ -11,7 +11,7 @@ describe('scene audio bootstrap', () => {
   it('keeps the selected music configured but temporarily disabled', () => {
     const source = readClientSource()
 
-    expect(source).toContain("import { SoundManager } from './soundManager'")
+    expect(source).toContain("import { SoundManager } from '../view/3d/soundManager'")
     expect(source).toContain('assets/audio/music/invincible.ogg')
     expect(source).toContain('const backgroundMusicEnabled = false')
     expect(source).toContain('const backgroundMusicVolume = 0.15')

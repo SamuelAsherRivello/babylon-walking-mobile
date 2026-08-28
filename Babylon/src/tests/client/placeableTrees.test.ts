@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   TreeSpawner,
   type TreeAssetLoader
-} from '../../client/scripts/treeSpawner'
+} from '../../client/scripts/view/3d/treeSpawner'
 
 type Harness = {
   engine: NullEngine
@@ -130,4 +130,3 @@ describe('placeable trees', () => {
     expect(tree.meshes.every(mesh => renderList.includes(mesh))).toBe(true)
   })
 })
-

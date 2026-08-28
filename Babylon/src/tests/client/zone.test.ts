@@ -10,7 +10,7 @@ import {
   zoneBackgroundColorConfirmation,
   zoneBackgroundColorDefault,
   zoneBackgroundColorNegation
-} from '../../client/scripts/zone'
+} from '../../client/scripts/model/zone'
 
 describe('world zone', () => {
   let engine: NullEngine

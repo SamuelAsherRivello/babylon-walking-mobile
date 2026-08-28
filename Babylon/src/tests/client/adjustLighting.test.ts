@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('adjustLighting', () => {
   it('halves point lights and raises ambient light by ten percent', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/adjustLighting.ts'),
+      resolve('src/client/scripts/view/3d/adjustLighting.ts'),
       'utf8'
     )
 

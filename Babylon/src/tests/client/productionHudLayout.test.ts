@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   calculateProductionUiLayout
-} from '../../client/scripts/productionHudLayout'
+} from '../../client/scripts/view/2d/productionHudLayout'
 
 describe('production HUD visible-canvas layout', () => {
   it('keeps portrait fullscreen UI inside a cropped canvas', () => {

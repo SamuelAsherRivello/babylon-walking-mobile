@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ResolutionDebugGrid,
   createResolutionGridModel
-} from '../../client/scripts/resolutionDebugGrid'
+} from '../../client/scripts/view/2d/resolutionDebugGrid'
 
 class FakeElement {
   public readonly attributes = new Map<string, string>()

@@ -9,7 +9,7 @@ const readSource = (name: string) => readFileSync(
 
 describe('HUD ownership', () => {
   it('keeps debug operations on a dedicated class', () => {
-    const source = readSource('debugHud.ts')
+    const source = readSource('view/2d/debugHud.ts')
 
     expect(source).toContain('export class DebugHud')
     expect(source).toContain('public toggle()')
@@ -24,7 +24,7 @@ describe('HUD ownership', () => {
   })
 
   it('makes all five panels independently collapsible', () => {
-    const source = readSource('debugHud.ts')
+    const source = readSource('view/2d/debugHud.ts')
 
     expect(source).toContain('function appendHudPanel(')
     expect(source).toContain("button.textContent = 'x'")
@@ -39,7 +39,7 @@ describe('HUD ownership', () => {
   })
 
   it('lets the corner container own the panel stack offsets', () => {
-    const source = readSource('debugHud.ts')
+    const source = readSource('view/2d/debugHud.ts')
 
     expect(source).toContain("panel.element.style.top = 'auto'")
     expect(source).toContain("panel.element.style.right = 'auto'")
@@ -48,7 +48,7 @@ describe('HUD ownership', () => {
   })
 
   it('does not expose debug visibility through production UI', () => {
-    const source = readSource('productionHud.ts')
+    const source = readSource('view/2d/productionHud.ts')
 
     expect(source).toContain('export class ProductionHud')
     expect(source).not.toContain('public toggle()')
@@ -56,11 +56,11 @@ describe('HUD ownership', () => {
   })
 
   it('integrates both owners independently', () => {
-    const source = readSource('index.ts')
+    const source = readSource('controller/index.ts')
 
-    expect(source).toContain("import { DebugHud } from './debugHud'")
+    expect(source).toContain("import { DebugHud } from '../view/2d/debugHud'")
     expect(source).toContain(
-      "import { ProductionHud } from './productionHud'"
+      "import { ProductionHud } from '../view/2d/productionHud'"
     )
     expect(source).toContain('debugHud.toggle()')
     expect(source).not.toContain('productionHud.toggle()')

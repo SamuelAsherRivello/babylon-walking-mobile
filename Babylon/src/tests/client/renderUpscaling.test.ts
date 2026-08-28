@@ -7,7 +7,7 @@ import {
   type RenderResolutionEngine,
   type RenderViewport,
   type UpscalingMode
-} from '../../client/scripts/renderUpscaling'
+} from '../../client/scripts/model/renderUpscaling'
 
 class FakeRenderEngine implements RenderResolutionEngine {
   public hardwareScalingLevel = 1

@@ -3,7 +3,7 @@ import {
   debugPreferenceDefaults,
   getDebugInputLabels,
   mobileDebugInputLabels
-} from '../../client/scripts/debugPreferences'
+} from '../../client/scripts/model/debugPreferences'
 
 describe('debug input labels', () => {
   it('shows the requested numbered debug inputs', () => {

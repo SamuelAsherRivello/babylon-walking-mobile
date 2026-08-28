@@ -10,15 +10,15 @@ import {
   VirtualController,
   calculateVirtualControllerLayout,
   virtualControllerVerticalOffset
-} from '../../client/scripts/virtualController'
+} from '../../client/scripts/controller/virtualController'
 import {
   PRODUCTION_LABEL_FONT_SIZE,
   PRODUCTION_LABEL_HEIGHT
-} from '../../client/scripts/productionTextStyle'
+} from '../../client/scripts/view/2d/productionTextStyle'
 import {
   virtualControllerPuckBackground,
   virtualControllerPuckPressedBackground
-} from '../../client/scripts/virtualMovementJoystick'
+} from '../../client/scripts/controller/virtualMovementJoystick'
 
 class FakePointerSurface extends EventTarget {
   readonly capturedPointers = new Set<number>()

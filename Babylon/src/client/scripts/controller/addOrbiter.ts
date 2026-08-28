@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
-import { OrbiterModel } from './model/orbiterModel'
-import { Orbiter } from './orbiter'
-import { Tweens } from './tweens'
+import { OrbiterModel } from '../model/orbiterModel'
+import { Orbiter } from '../view/3d/orbiter'
+import { Tweens } from '../view/3d/tweens'
 
 export class AddOrbiter {
   private orbiterCount = 0

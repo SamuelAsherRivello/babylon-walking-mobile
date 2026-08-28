@@ -14,7 +14,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   createGameplayActions,
   type GameplayActionDefinition
-} from '../../client/scripts/gameplayActions'
+} from '../../client/scripts/controller/gameplayActions'
 import {
   RuntimeInputController,
   blockPrimaryMouseCameraInput,
@@ -23,7 +23,7 @@ import {
   playerMotionTuning,
   playerTurnSpeed,
   runtimeInputLabels
-} from '../../client/scripts/runtimeInput'
+} from '../../client/scripts/controller/runtimeInput'
 
 type Harness = {
   camera: ArcRotateCamera

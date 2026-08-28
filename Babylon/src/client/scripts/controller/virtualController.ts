@@ -6,12 +6,12 @@ import {
   type Ellipse,
   TextBlock
 } from '@babylonjs/gui'
-import type { ProductionUiLayout } from './productionHudLayout'
+import type { ProductionUiLayout } from '../view/2d/productionHudLayout'
 import {
   PRODUCTION_LABEL_FONT_SIZE,
   PRODUCTION_LABEL_HEIGHT,
   applyProductionTextStyle
-} from './productionTextStyle'
+} from '../view/2d/productionTextStyle'
 import {
   VirtualMovementJoystick,
   createVirtualControllerPuck,

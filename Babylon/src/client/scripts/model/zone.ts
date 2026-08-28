@@ -16,7 +16,7 @@ import {
 import {
   createGroundAreaVisual,
   type GroundAreaVisual
-} from './groundAreaVisual'
+} from '../view/3d/groundAreaVisual'
 
 export type ZoneOptions = {
   id: string

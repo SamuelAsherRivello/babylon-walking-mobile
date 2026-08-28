@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   createGroundAreaVisual,
   groundAreaBorderColor
-} from '../../client/scripts/groundAreaVisual'
+} from '../../client/scripts/view/3d/groundAreaVisual'
 
 describe('ground-area visual', () => {
   let engine: NullEngine

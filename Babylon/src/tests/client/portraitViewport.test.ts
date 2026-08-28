@@ -8,7 +8,7 @@ const readStyles = () => readFileSync(
 )
 
 const readClientSource = () => readFileSync(
-  resolve('src/client/scripts/index.ts'),
+  resolve('src/client/scripts/controller/index.ts'),
   'utf8'
 )
 

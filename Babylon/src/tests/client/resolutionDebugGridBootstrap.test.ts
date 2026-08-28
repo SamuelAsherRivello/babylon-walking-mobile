@@ -3,14 +3,14 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const source = readFileSync(
-  resolve('src/client/scripts/index.ts'),
+  resolve('src/client/scripts/controller/index.ts'),
   'utf8'
 )
 
 describe('resolution debug grid bootstrap', () => {
   it('owns one grid through every runtime lifecycle path', () => {
     expect(source).toContain(
-      "import { ResolutionDebugGrid } from './resolutionDebugGrid'"
+      "import { ResolutionDebugGrid } from '../view/2d/resolutionDebugGrid'"
     )
     expect(source.split('new ResolutionDebugGrid()')).toHaveLength(2)
     expect(source).toContain(

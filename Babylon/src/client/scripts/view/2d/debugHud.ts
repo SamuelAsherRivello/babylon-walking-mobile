@@ -1,5 +1,5 @@
 // debugHud.ts - Owns optional development diagnostics and shortcuts.
-import { BabylonConfigurationModel } from './model/babylonConfigurationModel'
+import { BabylonConfigurationModel } from '../../model/babylonConfigurationModel'
 import {
   debugHudCorner,
   getDebugHudCornerPosition
@@ -8,13 +8,13 @@ import {
   readDebugHudPanelState,
   writeDebugHudPanelCollapsed,
   type DebugHudPanelId
-} from './debugHudPanelState'
+} from '../../model/debugHudPanelState'
 import type {
   RenderResolution,
   RenderResolutionSnapshot,
   UpscalingMode
-} from './renderUpscaling'
-import { TextElement } from './view/textElement'
+} from '../../model/renderUpscaling'
+import { TextElement } from './textElement'
 
 type RenderingType = 'WebGPU' | 'WebGL'
 

@@ -1,7 +1,7 @@
 import {
   createGameViewportSnapshot,
   type GameViewportSnapshot
-} from './gameViewport'
+} from '../../model/gameViewport'
 
 export type ProductionUiCanvasRect = {
   height: number

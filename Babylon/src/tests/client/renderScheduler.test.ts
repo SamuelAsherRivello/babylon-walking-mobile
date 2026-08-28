@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { RenderScheduler } from '../../client/scripts/renderScheduler'
+import { RenderScheduler } from '../../client/scripts/view/3d/renderScheduler'
 
 function measureFrames(
   targetFPS: number,

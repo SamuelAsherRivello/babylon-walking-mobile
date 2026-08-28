@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('fullscreen target', () => {
   it('uses the page root so overlays stay visible in fullscreen', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
 
@@ -15,7 +15,7 @@ describe('fullscreen target', () => {
 
   it('restores saved mobile fullscreen during startup', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
 

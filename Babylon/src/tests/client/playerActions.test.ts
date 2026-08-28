@@ -10,7 +10,7 @@ import {
   playerJumpDuration,
   playerJumpHeight,
   playerShotLifetime
-} from '../../client/scripts/playerActions'
+} from '../../client/scripts/controller/playerActions'
 
 type Harness = {
   actions: PlayerActionController

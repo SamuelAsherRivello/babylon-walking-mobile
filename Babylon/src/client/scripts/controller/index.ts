@@ -1,16 +1,16 @@
 // index.ts - Main entry point for Babylon.js client setup.
 import * as BABYLON from '@babylonjs/core'
 import '@babylonjs/loaders/glTF'
-import '../styles/index.css'
+import '../../styles/index.css'
 import { addInput } from './addInput'
 import { AddOrbiter } from './addOrbiter'
-import { addPostProcess } from './addPostProcess'
-import { DebugHud } from './debugHud'
+import { addPostProcess } from '../view/3d/addPostProcess'
+import { DebugHud } from '../view/2d/debugHud'
 import {
   applyGameCanvasLayout,
   calculateGameCanvasLayout,
   portraitMobileMediaQuery
-} from './gameViewport'
+} from '../model/gameViewport'
 import { createGameplayActions } from './gameplayActions'
 import {
   debugPreferenceDefaults,
@@ -21,38 +21,38 @@ import {
   setMobileModePreference,
   toggleDebugHudPreference,
   writeDebugPreferences
-} from './debugPreferences'
-import { BabylonConfigurationModel } from './model/babylonConfigurationModel'
+} from '../model/debugPreferences'
+import { BabylonConfigurationModel } from '../model/babylonConfigurationModel'
 import {
   LevelProgression,
   createGameWorld,
   levelDefinitions
-} from './level'
-import { OrbiterModel } from './model/orbiterModel'
-import { Orbiter } from './orbiter'
+} from '../model/level'
+import { OrbiterModel } from '../model/orbiterModel'
+import { Orbiter } from '../view/3d/orbiter'
 import { PlayerActionController } from './playerActions'
-import { ProductionHud } from './productionHud'
-import { readProductionUiViewport } from './productionHudLayout'
-import { createInventorySlots } from './productionHudModel'
-import { createPrototypeCamera } from './prototypeScene'
-import { ResolutionDebugGrid } from './resolutionDebugGrid'
-import { RenderScheduler } from './renderScheduler'
-import { createRenderingEngine } from './renderingEngineFactory'
-import { loadReleaseVersion } from './releaseVersion'
-import { createPreloader } from './preloader'
+import { ProductionHud } from '../view/2d/productionHud'
+import { readProductionUiViewport } from '../view/2d/productionHudLayout'
+import { createInventorySlots } from '../model/productionHudModel'
+import { createPrototypeCamera } from '../view/3d/prototypeScene'
+import { ResolutionDebugGrid } from '../view/2d/resolutionDebugGrid'
+import { RenderScheduler } from '../view/3d/renderScheduler'
+import { createRenderingEngine } from '../view/3d/renderingEngineFactory'
+import { loadReleaseVersion } from '../model/releaseVersion'
+import { createPreloader } from '../view/2d/preloader'
 import {
   RenderResolutionController,
   cycleUpscalingMode,
   type RenderViewport
-} from './renderUpscaling'
+} from '../model/renderUpscaling'
 import {
   RuntimeInputController,
   configureRuntimeCamera,
   runtimeInputLabels
 } from './runtimeInput'
-import { SoundManager } from './soundManager'
+import { SoundManager } from '../view/3d/soundManager'
 import { ThreeFingerTapController } from './threeFingerTap'
-import { Tweens } from './tweens'
+import { Tweens } from '../view/3d/tweens'
 
 const backgroundMusicEnabled = false
 const backgroundMusicVolume = 0.15
@@ -694,7 +694,7 @@ async function main() {
       )
     })
 
-    import.meta.hot.accept('./model/orbiterModel.ts', module => {
+    import.meta.hot.accept('../model/orbiterModel.ts', module => {
       if (!module) {
         return
       }

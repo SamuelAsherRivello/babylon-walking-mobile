@@ -1,6 +1,6 @@
 import type { Scene } from '@babylonjs/core'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { addInput } from '../../client/scripts/addInput'
+import { addInput } from '../../client/scripts/controller/addInput'
 
 class FakeCanvas extends EventTarget {
   public getBoundingClientRect() {

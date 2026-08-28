@@ -3,13 +3,13 @@ import {
   AppleCollectionQuest,
   type AppleCollectionResult
 } from './appleCollectionQuest'
-import { createPrototypeScene } from './prototypeScene'
+import { createPrototypeScene } from '../view/3d/prototypeScene'
 import {
   TreeSpawner,
   type TreeAssetLoader,
   type TreeInstance,
   type TreeType
-} from './treeSpawner'
+} from '../view/3d/treeSpawner'
 import {
   createZone,
   type WorldZone,

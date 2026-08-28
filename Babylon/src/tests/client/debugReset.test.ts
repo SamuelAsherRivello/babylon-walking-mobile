@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('debug reset input', () => {
   it('resets debug preferences without restarting the scene', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
     const resetBlock = source.slice(

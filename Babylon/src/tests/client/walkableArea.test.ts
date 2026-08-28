@@ -5,7 +5,7 @@ import {
   Vector3
 } from '@babylonjs/core'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { createWalkableArea } from '../../client/scripts/walkableArea'
+import { createWalkableArea } from '../../client/scripts/model/walkableArea'
 
 describe('walkable area', () => {
   let engine: NullEngine

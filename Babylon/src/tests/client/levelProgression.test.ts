@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   LevelProgression,
   levelDefinitions
-} from '../../client/scripts/level'
+} from '../../client/scripts/model/level'
 
 describe('level progression', () => {
   it('defines three ordered levels with matching apple targets', () => {

@@ -3,7 +3,7 @@ import {
   debugHudPanelDefaults,
   readDebugHudPanelState,
   writeDebugHudPanelCollapsed
-} from '../../client/scripts/debugHudPanelState'
+} from '../../client/scripts/model/debugHudPanelState'
 
 class MemoryStorage implements Storage {
   private readonly values = new Map<string, string>()

@@ -1,7 +1,7 @@
 // addPhysics.ts - Initializes physics and adds physics to meshes.
 import * as BABYLON from '@babylonjs/core'
 import HavokPhysics from '@babylonjs/havok'
-import { PhysicsData } from './model/physicsModel'
+import { PhysicsData } from '../model/physicsModel'
 
 const physicsData = new PhysicsData()
 

@@ -13,7 +13,7 @@ import {
   calculateJoystickLayout,
   virtualControllerPuckBackground,
   virtualControllerPuckPressedBackground
-} from '../../client/scripts/virtualMovementJoystick'
+} from '../../client/scripts/controller/virtualMovementJoystick'
 
 class FakePointerSurface extends EventTarget {
   readonly capturedPointers = new Set<number>()

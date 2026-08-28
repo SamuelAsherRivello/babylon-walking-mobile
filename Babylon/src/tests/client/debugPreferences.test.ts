@@ -7,7 +7,7 @@ import {
   setMobileModePreference,
   toggleDebugHudPreference,
   writeDebugPreferences
-} from '../../client/scripts/debugPreferences'
+} from '../../client/scripts/model/debugPreferences'
 
 class MemoryStorage implements Storage {
   private readonly values = new Map<string, string>()

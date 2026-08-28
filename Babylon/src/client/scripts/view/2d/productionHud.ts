@@ -13,7 +13,7 @@ import {
   createInventorySlots,
   formatHudLevelScore,
   type InventorySlots
-} from './productionHudModel'
+} from '../../model/productionHudModel'
 import {
   calculateProductionUiLayout,
   type ProductionUiCanvasRect,
@@ -29,7 +29,7 @@ import {
 import {
   VirtualController,
   type VirtualControllerOptions
-} from './virtualController'
+} from '../../controller/virtualController'
 
 export const UI_PADDING = 50
 

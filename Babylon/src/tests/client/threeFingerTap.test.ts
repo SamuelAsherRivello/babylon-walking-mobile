@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ThreeFingerTapController } from
-  '../../client/scripts/threeFingerTap'
+  '../../client/scripts/controller/threeFingerTap'
 
 type PointerOptions = {
   pointerId: number

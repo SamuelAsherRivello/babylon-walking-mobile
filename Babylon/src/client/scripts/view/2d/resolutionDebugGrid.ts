@@ -1,4 +1,4 @@
-import type { RenderResolution } from './renderUpscaling'
+import type { RenderResolution } from '../../model/renderUpscaling'
 
 export type ResolutionGridLayout = {
   height: number

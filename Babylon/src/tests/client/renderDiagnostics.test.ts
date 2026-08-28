@@ -5,14 +5,14 @@ import { describe, expect, it } from 'vitest'
 
 const debugHudSource = readFileSync(
   fileURLToPath(
-    new URL('../../client/scripts/debugHud.ts', import.meta.url),
+    new URL('../../client/scripts/view/2d/debugHud.ts', import.meta.url),
   ),
   'utf8',
 )
 
 const bootstrapSource = readFileSync(
   fileURLToPath(
-    new URL('../../client/scripts/index.ts', import.meta.url),
+    new URL('../../client/scripts/controller/index.ts', import.meta.url),
   ),
   'utf8',
 )

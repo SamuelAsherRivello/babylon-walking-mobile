@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('custom resolution display', () => {
   it('updates when Babylon changes the render size', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   AppleCollectionQuest
-} from '../../client/scripts/appleCollectionQuest'
+} from '../../client/scripts/model/appleCollectionQuest'
 
 describe('apple collection quest', () => {
   it('starts empty and incomplete', () => {

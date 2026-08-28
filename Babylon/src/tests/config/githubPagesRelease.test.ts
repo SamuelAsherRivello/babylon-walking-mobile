@@ -50,7 +50,7 @@ describe('GitHub Pages release publishing', () => {
 
   it('uses the Vite base URL for runtime audio assets', () => {
     const source = readFileSync(
-      path.join(babylonRoot, 'src', 'client', 'scripts', 'index.ts'),
+      path.join(babylonRoot, 'src', 'client', 'scripts', 'controller', 'index.ts'),
       'utf8'
     )
 

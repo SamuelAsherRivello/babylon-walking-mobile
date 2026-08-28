@@ -3,7 +3,7 @@ import {
   applyGameCanvasLayout,
   createGameViewportSnapshot,
   calculateGameCanvasLayout
-} from '../../client/scripts/gameViewport'
+} from '../../client/scripts/model/gameViewport'
 
 describe('game viewport cover geometry', () => {
   const narrowPortrait = {

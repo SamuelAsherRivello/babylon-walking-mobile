@@ -10,7 +10,7 @@ import {
   type ProductionUiCanvasRect,
   type ProductionUiLayout,
   type ProductionUiViewport
-} from './productionHudLayout'
+} from '../view/2d/productionHudLayout'
 
 type JoystickLayout = {
   bottom: number

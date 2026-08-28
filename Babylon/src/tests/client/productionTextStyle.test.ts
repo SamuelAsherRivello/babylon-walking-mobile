@@ -4,7 +4,7 @@ import {
   PRODUCTION_LABEL_FONT_SIZE,
   PRODUCTION_LABEL_HEIGHT,
   applyProductionTextStyle
-} from '../../client/scripts/productionTextStyle'
+} from '../../client/scripts/view/2d/productionTextStyle'
 
 describe('production text style', () => {
   it('applies the current score treatment and dimensions', () => {

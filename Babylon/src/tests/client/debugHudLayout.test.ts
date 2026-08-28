@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   debugHudCorner,
   getDebugHudCornerPosition
-} from '../../client/scripts/debugHudLayout'
+} from '../../client/scripts/view/2d/debugHudLayout'
 
 describe('debug HUD corner layout', () => {
   it('keeps lower-right as the hardcoded default', () => {

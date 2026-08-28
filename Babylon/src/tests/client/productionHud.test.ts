@@ -5,10 +5,10 @@ import {
   createInventorySlots,
   formatHudLevelScore,
   formatScore
-} from '../../client/scripts/productionHudModel'
+} from '../../client/scripts/model/productionHudModel'
 
 const readProductionHud = () => readFileSync(
-  resolve('src/client/scripts/productionHud.ts'),
+      resolve('src/client/scripts/view/2d/productionHud.ts'),
   'utf8'
 )
 

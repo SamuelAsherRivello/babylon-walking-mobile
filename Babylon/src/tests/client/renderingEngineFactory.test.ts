@@ -4,7 +4,7 @@ import {
   createRenderingEngine,
   type DisposableRenderingEngine,
   type InitializableRenderingEngine,
-} from '../../client/scripts/renderingEngineFactory'
+} from '../../client/scripts/view/3d/renderingEngineFactory'
 
 class FakeEngine implements DisposableRenderingEngine {
   public disposed = false

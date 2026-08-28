@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   createPrototypeCamera,
   createPrototypeScene
-} from '../../client/scripts/prototypeScene'
+} from '../../client/scripts/view/3d/prototypeScene'
 
 describe('prototype scene', () => {
   let engine: NullEngine

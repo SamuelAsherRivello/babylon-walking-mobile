@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 describe('physics frame-rate independence', () => {
   it('uses a fixed physics timestep', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/addPhysics.ts'),
+      resolve('src/client/scripts/controller/addPhysics.ts'),
       'utf8'
     )
 
@@ -14,7 +14,7 @@ describe('physics frame-rate independence', () => {
 
   it('steps physics before any render-fps throttle', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
     const physicsStepIndex = source.indexOf('advancePhysics(now)')
@@ -32,7 +32,7 @@ describe('physics frame-rate independence', () => {
 
   it('updates orbiters before any render-fps throttle', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
     const orbiterUpdateIndex = source.indexOf('updateOrbiters(deltaSeconds)')
@@ -49,7 +49,7 @@ describe('physics frame-rate independence', () => {
 
   it('updates input and zones before any render-fps throttle', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
     const inputUpdateIndex = source.indexOf(
@@ -71,7 +71,7 @@ describe('physics frame-rate independence', () => {
 
   it('bounds catch-up work after a long pause', () => {
     const source = readFileSync(
-      resolve('src/client/scripts/index.ts'),
+      resolve('src/client/scripts/controller/index.ts'),
       'utf8'
     )
 
