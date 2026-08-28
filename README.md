@@ -31,7 +31,11 @@ WebGPU on PC and Mobile.
 
 ## Live Demo
 
-[https://samuelasherrivello.github.io/babylon-walking-mobile/latest/](https://samuelasherrivello.github.io/babylon-walking-mobile/latest/)
+<https://samuelasherrivello.github.io/babylon-walking-mobile/latest/>
+
+<https://samuelasherrivello.github.io/babylon-walking-mobile/releases/v0.05.6/>
+
+Versioned releases also use the route `/releases/<version>/`.
 
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 
@@ -67,7 +71,8 @@ WebGPU not working? See [Troubleshooting](#troubleshooting).
 
 ### Release Workflow
 
-1. Create a GitHub Release with a version tag such as `v0.01`.
+1. Update `Babylon/public/environment.json` and create a matching
+   three-component GitHub Release tag such as `v0.05.6`.
 2. Wait for `ReleaseWebBuildToGithubPages` to finish.
 3. Verify the published build from the Live Demo link.
 
