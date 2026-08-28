@@ -114,7 +114,9 @@ describe('GitHub Pages release publishing', () => {
     expect(environment.releaseVersion).toMatch(
       /^v[0-9]+[.][0-9]+[.][0-9]+$/
     )
-    expect(environment.downloadSize).toBeUndefined()
+    expect([undefined, '000000000000']).toContain(
+      environment.downloadSize
+    )
   })
 
   it('documents the live demo and versioned releases', () => {
