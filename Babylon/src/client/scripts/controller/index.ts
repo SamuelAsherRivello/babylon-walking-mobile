@@ -55,6 +55,9 @@ import {
 import { SoundManager } from '../view/3d/soundManager'
 import { ThreeFingerTapController } from './threeFingerTap'
 import { Tweens } from '../view/3d/tweens'
+import { WorkManager } from '../model/workManager'
+import { PlayerProgressBar } from '../view/3d/playerProgressBar'
+import { PlayerStateEffects } from '../view/3d/playerStateEffects'
 
 const backgroundMusicEnabled = false
 const backgroundMusicVolume = 0.15
@@ -306,6 +309,22 @@ async function main() {
     scene,
     prototype.player
   )
+  const workManager = new WorkManager()
+  const playerProgressBar = new PlayerProgressBar(
+    scene,
+    prototype.player,
+    {
+      backgroundColor: '#302a26',
+      endValue: 1,
+      progressColor: '#f5b642',
+      startValue: 0
+    }
+  )
+  const playerStateEffects = new PlayerStateEffects(
+    scene,
+    prototype.playerMaterial,
+    workManager
+  )
   const gameplayActions = createGameplayActions({
     onJump: () => playerActions.jump(),
     onShoot: () => playerActions.shoot()
@@ -385,6 +404,9 @@ async function main() {
     virtualController.setEnabled(true)
     camera.attachControl(canvas, true)
     isCompletionActionPending = false
+    workManager.clear('apple')
+    playerProgressBar.setValue(0)
+    playerProgressBar.setVisible(false)
     const questBeginningSoundUrl = getQuestSoundUrl(
       progression.activeQuestDefinition.beginningSound
     )
@@ -393,12 +415,24 @@ async function main() {
   productionHud.setScore(score)
   startActiveLevel()
   world.appleZone.onEnteredObservable.add(() => {
-    const collection = progression.collectApple()
+    if (progression.quest.isComplete) {
+      return
+    }
+    workManager.start('apple', {
+      endValue: 1,
+      rate: 1,
+      startValue: 0
+    })
+    playerProgressBar.setValue(0)
+    playerProgressBar.setVisible(true)
+  })
 
+  const completeAppleWork = () => {
+    const collection = progression.collectApple()
     if (!collection.accepted) {
       return
     }
-
+    workManager.clear('apple')
     const questUpdateSoundUrl = getQuestSoundUrl(
       progression.activeQuestDefinition.updateSound
     )
@@ -408,11 +442,11 @@ async function main() {
       progression.quest.appleCount,
       progression.activeQuestDefinition.inventorySlotCount
     ))
-
+    playerProgressBar.setValue(1)
+    playerProgressBar.setVisible(false)
     if (!collection.justCompleted) {
       return
     }
-
     runtimeInput.setEnabled(false)
     virtualController.setEnabled(false)
     camera.detachControl()
@@ -420,35 +454,25 @@ async function main() {
     productionHud.showPrompt({
       title: isFinalLevel ? 'Game Complete' : 'Level Complete',
       body: isFinalLevel ? 'Restart Game?' : 'Next Level?',
-      buttons: [
-        {
-          label: 'OK',
-          onClick: async () => {
-            if (isCompletionActionPending) {
-              return
-            }
-
-            isCompletionActionPending = true
-            await soundManager.playEffectAndWait(
-              runtimeUiClickSoundUrl,
-              clickSoundVolume
-            )
-
-            if (progression.isGameComplete) {
-              window.location.reload()
-              return
-            }
-
-            if (progression.advance()) {
-              startActiveLevel()
-            } else {
-              isCompletionActionPending = false
-            }
+      buttons: [{
+        label: 'OK',
+        onClick: async () => {
+          if (isCompletionActionPending) return
+          isCompletionActionPending = true
+          await soundManager.playEffectAndWait(
+            runtimeUiClickSoundUrl,
+            clickSoundVolume
+          )
+          if (progression.isGameComplete) {
+            window.location.reload()
+            return
           }
+          if (progression.advance()) startActiveLevel()
+          else isCompletionActionPending = false
         }
-      ]
+      }]
     })
-  })
+  }
 
   preloader.setStatus('Ready')
   engine.hideLoadingUI()
@@ -638,6 +662,18 @@ async function main() {
     for (const zone of zones) {
       zone.update(prototype.player.position, !playerActions.isJumping)
     }
+    const work = workManager.update(
+      'apple',
+      inputDeltaSeconds,
+      world.appleZone.isPlayerInside
+    )
+    if (work) {
+      playerProgressBar.setValue(work.value)
+      playerProgressBar.setVisible(
+        world.appleZone.isPlayerInside && !work.completed
+      )
+      if (work.justCompleted) completeAppleWork()
+    }
     const deltaSeconds = (now - lastOrbiterTime) / 1000
     lastOrbiterTime = now
     updateOrbiters(deltaSeconds)
@@ -662,6 +698,9 @@ async function main() {
     threeFingerTap.dispose()
     runtimeInput.dispose()
     playerActions.dispose()
+    playerStateEffects.dispose()
+    workManager.dispose()
+    playerProgressBar.dispose()
     productionHud.dispose()
     resolutionGrid.dispose()
     resizeObserver.disconnect()

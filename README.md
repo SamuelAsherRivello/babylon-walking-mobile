@@ -31,12 +31,7 @@ WebGPU on PC and Mobile.
 
 ## Live Demo
 
-https://samuelasherrivello.github.io/babylon-walking-mobile/releases/v0.05.2/
-
-The verified link above opens `v0.05.2` directly. The stable newest-release
-route is https://samuelasherrivello.github.io/babylon-walking-mobile/latest/.
-Immutable builds are available under `/releases/<version>/` for replaying a
-specific version.
+[https://samuelasherrivello.github.io/babylon-walking-mobile/latest/](https://samuelasherrivello.github.io/babylon-walking-mobile/latest/)
 
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 
