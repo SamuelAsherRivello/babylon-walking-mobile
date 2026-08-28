@@ -29,6 +29,7 @@ Source: user
 Type: Convention
 Scope: documentation
 Note: Keep only the stable `/latest/` GitHub Pages link in the README Live Demo
-section. Do not edit the README for each release because that route updates
-automatically. Keep version-specific release routes out of the README.
+section. Keep version-specific release routes out of the README. After each
+release, update only the hidden cache key on the `[x]` link reference, using
+the release version's digits, while leaving the displayed URL unchanged.
 Source: user

@@ -122,10 +122,20 @@ describe('GitHub Pages release publishing', () => {
     )
   })
 
-  it('documents the stable live demo without per-release edits', () => {
+  it('documents the stable live demo with a hidden cache key', () => {
     const readme = readFileSync(
       path.join(repositoryRoot, 'README.md'),
       'utf8'
+    )
+    const environment = JSON.parse(
+      readFileSync(
+        path.join(babylonRoot, 'public', 'environment.json'),
+        'utf8'
+      )
+    ) as { releaseVersion: string }
+    const releaseCacheKey = environment.releaseVersion.replace(
+      /\D/g,
+      ''
     )
 
     expect(readme).toContain('## Live Demo')
@@ -134,7 +144,10 @@ describe('GitHub Pages release publishing', () => {
         'babylon-walking-mobile/latest/'
     )
     expect(readme).toContain(
-      'Do not update this README for each release'
+      'Keep the visible URL stable'
+    )
+    expect(readme).toContain(
+      'babylon-walking-mobile/latest/?v=' + releaseCacheKey
     )
     expect(readme).not.toMatch(
       /babylon-walking-mobile\/releases\/v\d/
