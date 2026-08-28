@@ -37,13 +37,13 @@ describe('shared game world', () => {
       expect(definition.quests).toHaveLength(1)
       expect(definition.quests[0]?.inventorySlotCount).toBe(levelNumber)
       expect(definition.zones.map(zone => zone.title)).toEqual([
-        'START',
+        'Home',
         'Apple'
       ])
     })
   })
 
-  it('defines a disabled cosmetic START zone at the origin', () => {
+  it('defines a disabled cosmetic Home zone at the origin', () => {
     const start = levelDefinitions[0]?.zones[0]
 
     expect(start).toMatchObject({
@@ -52,17 +52,17 @@ describe('shared game world', () => {
       position: { x: 0, y: 0, z: 0 },
       size_x: 3,
       size_z: 3,
-      title: 'START'
+      title: 'Home'
     })
     expect(start?.model).toBeUndefined()
   })
 
-  it('maps the tree only to the Apple zone at X -6 and Z 7', () => {
+  it('maps the tree only to the Apple zone at X -6 and Z 6', () => {
     const apple = levelDefinitions[0]?.zones[1]
 
     expect(apple).toMatchObject({
       id: 'apple',
-      position: { x: -6, y: 0, z: 7 },
+      position: { x: -6, y: 0, z: 6 },
       size_x: 3,
       size_z: 3,
       title: 'Apple'
@@ -101,8 +101,8 @@ describe('shared game world', () => {
     expect(runtime.tree.root.position.x).toBe(0)
     expect(runtime.tree.root.position.z).toBe(0)
     expect(runtime.tree.root.getAbsolutePosition().x).toBe(-6)
-    expect(runtime.tree.root.getAbsolutePosition().z).toBe(7)
-    expect(runtime.startZone.title).toBe('START')
+    expect(runtime.tree.root.getAbsolutePosition().z).toBe(6)
+    expect(runtime.startZone.title).toBe('Home')
     expect(runtime.startZone.isEnabled).toBe(false)
     expect(runtime.appleZone.title).toBe('Apple')
     expect(runtime.walkableArea.size_x).toBe(20)

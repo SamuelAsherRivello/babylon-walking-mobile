@@ -33,13 +33,12 @@ import { Orbiter } from './orbiter'
 import { PlayerActionController } from './playerActions'
 import { ProductionHud } from './productionHud'
 import { readProductionUiViewport } from './productionHudLayout'
-import {
-  createInventorySlots,
-  formatHudTitle
-} from './productionHudModel'
+import { createInventorySlots } from './productionHudModel'
 import { createPrototypeCamera } from './prototypeScene'
+import { ResolutionDebugGrid } from './resolutionDebugGrid'
 import { RenderScheduler } from './renderScheduler'
 import { createRenderingEngine } from './renderingEngineFactory'
+import { loadReleaseVersion } from './releaseVersion'
 import {
   RenderResolutionController,
   cycleUpscalingMode,
@@ -60,6 +59,9 @@ const clickSoundVolume = 0.35
 
 async function main() {
   const showLoader = false
+  const releaseVersion = await loadReleaseVersion(
+    import.meta.env.BASE_URL
+  )
   const canvas = document.createElement('canvas')
   document.body.append(canvas)
   const portraitMobileMedia = window.matchMedia(
@@ -214,6 +216,10 @@ async function main() {
       readRenderViewport(),
       debugPreferences.upscalingMode
     )
+  const resolutionGrid = new ResolutionDebugGrid()
+  resolutionGrid.setResolution(
+    initialRenderingResolution.displayResolution
+  )
   scene = new BABYLON.Scene(engine)
   debugHud = new DebugHud(
     configuration,
@@ -221,7 +227,8 @@ async function main() {
     debugInputLabels,
     initialRenderingResolution,
     runtimeInputLabels,
-    mobileDebugInputLabels
+    mobileDebugInputLabels,
+    storage
   )
 
   if (engineResult.renderingType === 'WebGL') {
@@ -246,10 +253,18 @@ async function main() {
       debugPreferences.upscalingMode
     )
     debugHud.setRenderingResolution(snapshot)
+    resolutionGrid.setResolution(snapshot.displayResolution)
   }
   const handleResize = () => {
     updateCanvasPresentation()
     synchronizeRenderResolution()
+    const canvasRect = canvas.getBoundingClientRect()
+    resolutionGrid.setLayout({
+      height: canvasRect.height,
+      left: canvasRect.left,
+      top: canvasRect.top,
+      width: canvasRect.width
+    })
     updateProductionUiLayout()
     adjustUIForInspector()
   }
@@ -319,10 +334,8 @@ async function main() {
   )
   const productionHud = new ProductionHud(
     scene,
-    formatHudTitle(
-      progression.activeLevelDefinition.name,
-      progression.activeQuestDefinition.name
-    ),
+    progression.activeLevelDefinition.name,
+    releaseVersion,
     maximumInventorySlotCount
   )
   const virtualController = productionHud.addVirtualController({
@@ -367,10 +380,7 @@ async function main() {
       zone.update(prototype.player.position, !playerActions.isJumping)
     }
 
-    productionHud.setTitle(formatHudTitle(
-      definition.name,
-      questDefinition.name
-    ))
+    productionHud.setLevel(definition.name)
     productionHud.setInventorySlotCount(
       questDefinition.inventorySlotCount
     )
@@ -499,6 +509,7 @@ async function main() {
       debugHud.setTargetFPS(targetFramerate)
       saveDebugPreferences()
     },
+    onGrid: () => resolutionGrid.toggle(),
     onRestart: () => {
       window.location.reload()
     },
@@ -515,6 +526,7 @@ async function main() {
       debugHud.setConfig()
       debugHud.setTargetFPS(targetFramerate)
       debugHud.setShortcuts(getDebugInputLabels(debugPreferences))
+      resolutionGrid.setVisible(false)
       adjustUIForInspector()
     }
   }, {
@@ -665,6 +677,7 @@ async function main() {
     runtimeInput.dispose()
     playerActions.dispose()
     productionHud.dispose()
+    resolutionGrid.dispose()
     resizeObserver.disconnect()
     observer.disconnect()
     window.removeEventListener('resize', handleResize)

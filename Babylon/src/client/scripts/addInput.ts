@@ -10,6 +10,7 @@ type InputActions = {
   onAntialiasing?: () => void
   onUpscaling?: () => void
   onFramerate?: () => void
+  onGrid?: () => void
   onRestart?: () => void
   onResetDefaults?: () => void
 }
@@ -74,11 +75,15 @@ export function addInput(
     }
 
     if (shortcut === '6') {
+      actions.onGrid?.()
+    }
+
+    if (shortcut === '7') {
       actions.onResetDefaults?.()
       await setInspectorOpen?.(false)
     }
 
-    if (shortcut === '7') {
+    if (shortcut === '8') {
       actions.onRestart?.()
     }
 

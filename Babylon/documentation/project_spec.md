@@ -21,7 +21,7 @@ scene with physics, post-processing, and a lightweight UI overlay.
 ## Runtime Behavior
 
 - The app creates a Babylon engine and scene at startup.
-- The room model is loaded from `assets/glb/pixel_room.glb`.
+- The player and ground scene are created at startup.
 - Input wiring includes:
   `O` to spawn orbiters and `D` to toggle the inspector in development.
 - Orbiters are created through `AddOrbiter`.

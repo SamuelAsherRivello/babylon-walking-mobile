@@ -50,8 +50,9 @@ export function getDebugInputLabels(preferences: DebugPreferences) {
       preferences.targetFramerateIndex !==
         debugPreferenceDefaults.targetFramerateIndex
     )}`,
-    '6 = Reset to Defaults (Disk)',
-    '7 = Restart Scene',
+    '6 = Toggle Grid',
+    '7 = Reset to Defaults (Disk)',
+    '8 = Restart Scene',
     'IJKL = Move Camera'
   ]
 }

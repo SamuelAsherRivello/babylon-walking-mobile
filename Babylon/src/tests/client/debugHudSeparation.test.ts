@@ -23,6 +23,30 @@ describe('HUD ownership', () => {
     expect(source).toContain("'Debug Input (Mobile)'")
   })
 
+  it('makes all five panels independently collapsible', () => {
+    const source = readSource('debugHud.ts')
+
+    expect(source).toContain('function appendHudPanel(')
+    expect(source).toContain("button.textContent = 'x'")
+    expect(source).toContain("button.addEventListener('click'")
+    expect(source).toContain('content.hidden = isCollapsed')
+    expect(source).toContain("'Config'")
+    expect(source).toContain("'Rendering'")
+    expect(source).toContain("'Debug Input (PC)'")
+    expect(source).toContain("'Debug Input (Mobile)'")
+    expect(source).toContain("'Runtime Input'")
+    expect(source).toContain('writeDebugHudPanelCollapsed(')
+  })
+
+  it('lets the corner container own the panel stack offsets', () => {
+    const source = readSource('debugHud.ts')
+
+    expect(source).toContain("panel.element.style.top = 'auto'")
+    expect(source).toContain("panel.element.style.right = 'auto'")
+    expect(source).toContain("panel.element.style.bottom = 'auto'")
+    expect(source).toContain("panel.element.style.left = 'auto'")
+  })
+
   it('does not expose debug visibility through production UI', () => {
     const source = readSource('productionHud.ts')
 

@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   createInventorySlots,
-  formatHudTitle,
+  formatHudLevelScore,
   formatScore
 } from '../../client/scripts/productionHudModel'
 
@@ -13,12 +13,15 @@ const readProductionHud = () => readFileSync(
 )
 
 describe('production HUD', () => {
-  it('formats the title from the current level and quest names', () => {
-    expect(formatHudTitle('Level 1', 'Quest 1')).toBe(
-      'WalkMobile Level:1 Quest:1'
+  it('formats the level and score together with three-digit padding', () => {
+    expect(formatHudLevelScore('Level 1', 0)).toBe(
+      'Level: 001 Score: 000'
     )
-    expect(formatHudTitle('Level 12', 'Quest 4')).toBe(
-      'WalkMobile Level:12 Quest:4'
+    expect(formatHudLevelScore('Level 12', 8)).toBe(
+      'Level: 012 Score: 008'
+    )
+    expect(formatHudLevelScore('Level 1250', 1250)).toBe(
+      'Level: 1250 Score: 1250'
     )
   })
 
@@ -76,13 +79,15 @@ describe('production HUD', () => {
     expect(source).toContain('button.onPointerClickObservable.add(')
   })
 
-  it('updates the persistent game title between levels', () => {
+  it('updates level state without replacing the title or score', () => {
     const source = readProductionHud()
 
-    expect(source).toContain('private readonly titleText: TextBlock')
-    expect(source).toContain('this.titleText = leftGroup.titleText')
-    expect(source).toContain('public setTitle(title: string)')
-    expect(source).toContain('this.titleText.text = title')
+    expect(source).toContain('private levelName: string')
+    expect(source).toContain('private score = 0')
+    expect(source).toContain('public setLevel(levelName: string)')
+    expect(source).toContain('this.levelName = levelName')
+    expect(source).toContain('this.refreshLevelScore()')
+    expect(source).toContain("'Babylon Walking'")
   })
 
   it('shows only the active level inventory slots', () => {
@@ -108,15 +113,19 @@ describe('production HUD', () => {
       .toBeLessThan(source.indexOf('this.texture.dispose()'))
   })
 
-  it('stacks title, score, label, and slots in the upper left', () => {
+  it('uses one ordered upper-left HUD stack', () => {
     const source = readProductionHud()
     const leftGroupStart = source.indexOf(
-      'private createLeftGroup(title: string, slotCount: number)'
+      'private createLeftGroup('
     )
-    const leftGroup = source.slice(leftGroupStart)
+    const leftGroupEnd = source.indexOf(
+      'private createPrompt()',
+      leftGroupStart
+    )
+    const leftGroup = source.slice(leftGroupStart, leftGroupEnd)
+    const versionIndex = leftGroup.indexOf("'ReleaseVersion'")
     const titleIndex = leftGroup.indexOf("'GameTitle'")
-    const scoreIndex = leftGroup.indexOf("'Score'")
-    const labelIndex = leftGroup.indexOf("'InventoryLabel'")
+    const levelScoreIndex = leftGroup.indexOf("'LevelScore'")
     const slotsIndex = leftGroup.indexOf(
       "new StackPanel('InventorySlots')"
     )
@@ -128,21 +137,23 @@ describe('production HUD', () => {
     expect(source).toContain('topInPixels = UI_PADDING')
     expect(source).toContain('isHitTestVisible = false')
     expect(source).not.toContain('getRenderWidth')
-    expect(source).not.toContain('HORIZONTAL_ALIGNMENT_RIGHT')
-    expect(source).not.toContain('leftInPixels = -UI_PADDING')
-    expect(leftGroup).toContain("'Score: 000'")
-    expect(leftGroup).toContain('PRODUCTION_LABEL_HEIGHT')
-    expect(leftGroup).toContain('PRODUCTION_LABEL_FONT_SIZE')
-    expect(titleIndex).toBeGreaterThan(-1)
-    expect(scoreIndex).toBeGreaterThan(titleIndex)
-    expect(labelIndex).toBeGreaterThan(scoreIndex)
-    expect(slotsIndex).toBeGreaterThan(labelIndex)
+    expect(source).not.toContain('private readonly rightGroup')
+    expect(leftGroup).not.toContain("'InventoryLabel'")
+    expect(leftGroup).not.toContain("'Inventory:'")
+    expect(leftGroup).not.toContain('Quest')
+    expect(source).toContain('const VERSION_FONT_SIZE = 24')
+    expect(leftGroup).toContain('textWrapping = false')
+    expect(versionIndex).toBeGreaterThan(-1)
+    expect(titleIndex).toBeGreaterThan(versionIndex)
+    expect(levelScoreIndex).toBeGreaterThan(titleIndex)
+    expect(slotsIndex).toBeGreaterThan(levelScoreIndex)
   })
 
   it('applies one visible layout to the HUD, prompt, and controller', () => {
     const source = readProductionHud()
 
     expect(source).toContain('private readonly leftGroup: StackPanel')
+    expect(source).not.toContain('private readonly rightGroup: StackPanel')
     expect(source).toContain('public updateLayout(')
     expect(source).toContain('calculateProductionUiLayout(')
     expect(source).toContain(
@@ -163,5 +174,13 @@ describe('production HUD', () => {
     expect(source).toContain('PRODUCTION_LABEL_FONT_SIZE')
     expect(source).toContain('PRODUCTION_LABEL_HEIGHT')
     expect(source).toContain('applyProductionTextStyle(')
+  })
+
+  it('disposes the ordered group through the shared texture', () => {
+    const source = readProductionHud()
+
+    expect(source).toContain('this.texture.addControl(this.leftGroup)')
+    expect(source).toContain('this.texture.dispose()')
+    expect(source).not.toContain('this.leftGroup.dispose()')
   })
 })

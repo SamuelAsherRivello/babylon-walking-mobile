@@ -1,0 +1,7 @@
+{
+  "name": "babylon-walking-mobile",
+  "private": true,
+  "workspaces": [
+    "Babylon"
+  ]
+}

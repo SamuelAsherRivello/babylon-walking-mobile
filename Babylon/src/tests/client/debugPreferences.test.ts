@@ -99,8 +99,9 @@ describe('debugPreferences', () => {
       '3 = Toggle Antialias',
       '4 = Toggle Upscaling',
       '5 = Toggle FPS',
-      '6 = Reset to Defaults (Disk)',
-      '7 = Restart Scene',
+      '6 = Toggle Grid',
+      '7 = Reset to Defaults (Disk)',
+      '8 = Restart Scene',
       'IJKL = Move Camera'
     ])
     expect(labels).toEqual([
@@ -109,8 +110,9 @@ describe('debugPreferences', () => {
       '3 = Toggle Antialias *',
       '4 = Toggle Upscaling *',
       '5 = Toggle FPS *',
-      '6 = Reset to Defaults (Disk)',
-      '7 = Restart Scene',
+      '6 = Toggle Grid',
+      '7 = Reset to Defaults (Disk)',
+      '8 = Restart Scene',
       'IJKL = Move Camera'
     ])
   })

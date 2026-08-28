@@ -11,6 +11,18 @@ const countMatches = (source: string, value: string) =>
   source.split(value).length - 1
 
 describe('prototype scene bootstrap', () => {
+  it('loads runtime metadata once and passes it to the production HUD', () => {
+    const source = readClientSource()
+
+    expect(source).toContain(
+      "import { loadReleaseVersion } from './releaseVersion'"
+    )
+    expect(source).toContain('await loadReleaseVersion(')
+    expect(source).toContain('import.meta.env.BASE_URL')
+    expect(source).not.toContain('import.meta.env.VITE_RELEASE_VERSION')
+    expect(source).toContain('releaseVersion,')
+  })
+
   it('starts the prototype scene without the room or bouncing sphere', () => {
     const source = readClientSource()
 
@@ -191,7 +203,8 @@ describe('prototype scene bootstrap', () => {
     expect(source).toContain("label: 'OK'")
     expect(source).toContain('progression.advance()')
     expect(source).toContain('startActiveLevel()')
-    expect(source).toContain('productionHud.setTitle(')
+    expect(source).toContain('productionHud.setLevel(')
+    expect(source).not.toContain('productionHud.setTitle(')
     expect(source).toContain('runtimeInput.setEnabled(true)')
     expect(source).toContain('virtualController.setEnabled(true)')
     expect(source).toContain('camera.attachControl(canvas, true)')

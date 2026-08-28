@@ -5,15 +5,10 @@ export interface InventoryItem {
 
 export type InventorySlots = ReadonlyArray<InventoryItem | null>
 
-function formatProgressName(name: string) {
-  return name.replace(/\s+(?=\d+$)/, ':')
-}
+function readLevelNumber(levelName: string): number {
+  const match = levelName.match(/\d+$/)
 
-export function formatHudTitle(levelName: string, questName: string) {
-  const level = formatProgressName(levelName)
-  const quest = formatProgressName(questName)
-
-  return `WalkMobile ${level} ${quest}`
+  return match ? Number.parseInt(match[0], 10) : 0
 }
 
 export function createInventorySlots(
@@ -34,8 +29,17 @@ export function createInventorySlots(
   )
 }
 
-export function formatScore(score: number) {
+export function formatScore(score: number): string {
   const normalizedScore = Math.max(0, Math.floor(score))
 
   return normalizedScore.toString().padStart(3, '0')
+}
+
+export function formatHudLevelScore(
+  levelName: string,
+  score: number
+): string {
+  const level = formatScore(readLevelNumber(levelName))
+
+  return `Level: ${level} Score: ${formatScore(score)}`
 }

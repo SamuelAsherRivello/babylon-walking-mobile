@@ -45,6 +45,14 @@ describe('portrait game viewport', () => {
     )
   })
 
+  it('keeps the WebGL notice below the upper-left HUD', () => {
+    const styles = readStyles()
+
+    expect(styles).toMatch(
+      /[.]info-overlay\s*\{[^}]*top: calc\([^;]+165px\s*\);/s
+    )
+  })
+
   it('anchors the game frame independently of Inspector layout', () => {
     const styles = readStyles()
     const source = readClientSource()

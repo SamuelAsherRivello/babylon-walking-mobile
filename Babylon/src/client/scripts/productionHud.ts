@@ -11,7 +11,7 @@ import {
 } from '@babylonjs/gui'
 import {
   createInventorySlots,
-  formatScore,
+  formatHudLevelScore,
   type InventorySlots
 } from './productionHudModel'
 import {
@@ -37,6 +37,7 @@ const UI_IDEAL_HEIGHT = 1600
 const SLOT_BACKGROUND = 'rgba(25, 20, 22, 0.82)'
 const SLOT_BORDER = '#d8b575'
 const LEFT_GROUP_WIDTH = 650
+const VERSION_FONT_SIZE = 24
 const TITLE_HEIGHT = 58
 const SLOT_SIZE = 82
 const SLOT_GAP = 10
@@ -82,8 +83,7 @@ function createSlot(index: number) {
 
 export class ProductionHud {
   private readonly texture: AdvancedDynamicTexture
-  private readonly titleText: TextBlock
-  private readonly scoreText: TextBlock
+  private readonly levelScoreText: TextBlock
   private readonly slots: Rectangle[]
   private readonly leftGroup: StackPanel
   private readonly prompt: Rectangle
@@ -92,8 +92,16 @@ export class ProductionHud {
   private readonly promptButtons: StackPanel
   private virtualController?: VirtualController
   private layout?: ProductionUiLayout
+  private levelName: string
+  private score = 0
 
-  public constructor(scene: Scene, title: string, slotCount = 5) {
+  public constructor(
+    scene: Scene,
+    levelName: string,
+    version: string,
+    slotCount = 5
+  ) {
+    this.levelName = levelName
     this.texture = AdvancedDynamicTexture.CreateFullscreenUI(
       'ProductionHud',
       true,
@@ -101,9 +109,12 @@ export class ProductionHud {
     )
     this.texture.idealHeight = UI_IDEAL_HEIGHT
 
-    const leftGroup = this.createLeftGroup(title, slotCount)
-    this.titleText = leftGroup.titleText
-    this.scoreText = leftGroup.scoreText
+    const leftGroup = this.createLeftGroup(
+      levelName,
+      version,
+      slotCount
+    )
+    this.levelScoreText = leftGroup.levelScoreText
     this.slots = leftGroup.slots
     this.leftGroup = leftGroup.control
     this.texture.addControl(this.leftGroup)
@@ -118,12 +129,14 @@ export class ProductionHud {
     this.setInventory(createInventorySlots(null, 0, slotCount))
   }
 
-  public setScore(score: number) {
-    this.scoreText.text = `Score: ${formatScore(score)}`
+  public setScore(score: number): void {
+    this.score = score
+    this.refreshLevelScore()
   }
 
-  public setTitle(title: string): void {
-    this.titleText.text = title
+  public setLevel(levelName: string): void {
+    this.levelName = levelName
+    this.refreshLevelScore()
   }
 
   public setInventorySlotCount(slotCount: number): void {
@@ -249,7 +262,11 @@ export class ProductionHud {
     this.texture.dispose()
   }
 
-  private createLeftGroup(title: string, slotCount: number) {
+  private createLeftGroup(
+    levelName: string,
+    version: string,
+    slotCount: number
+  ) {
     const leftGroup = new StackPanel('ProductionHudLeft')
     leftGroup.widthInPixels = LEFT_GROUP_WIDTH
     leftGroup.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT
@@ -258,22 +275,33 @@ export class ProductionHud {
     leftGroup.topInPixels = UI_PADDING
     leftGroup.isHitTestVisible = false
 
-    const titleText = createText('GameTitle', title, TITLE_HEIGHT, 40)
-    const scoreText = createText(
-      'Score',
-      'Score: 000',
+    const versionText = createText(
+      'ReleaseVersion',
+      version,
+      PRODUCTION_LABEL_HEIGHT,
+      VERSION_FONT_SIZE
+    )
+    versionText.textWrapping = false
+
+    const titleText = createText(
+      'GameTitle',
+      'Babylon Walking',
+      TITLE_HEIGHT,
+      40
+    )
+    titleText.textWrapping = false
+
+    const levelScoreText = createText(
+      'LevelScore',
+      formatHudLevelScore(levelName, this.score),
       PRODUCTION_LABEL_HEIGHT,
       PRODUCTION_LABEL_FONT_SIZE
     )
-    const inventoryLabel = createText(
-      'InventoryLabel',
-      'Inventory:',
-      PRODUCTION_LABEL_HEIGHT,
-      PRODUCTION_LABEL_FONT_SIZE
-    )
+    levelScoreText.textWrapping = false
+
+    leftGroup.addControl(versionText)
     leftGroup.addControl(titleText)
-    leftGroup.addControl(scoreText)
-    leftGroup.addControl(inventoryLabel)
+    leftGroup.addControl(levelScoreText)
 
     const slotRow = new StackPanel('InventorySlots')
     slotRow.isVertical = false
@@ -295,10 +323,16 @@ export class ProductionHud {
 
     return {
       control: leftGroup,
-      scoreText,
-      slots,
-      titleText
+      levelScoreText,
+      slots
     }
+  }
+
+  private refreshLevelScore(): void {
+    this.levelScoreText.text = formatHudLevelScore(
+      this.levelName,
+      this.score
+    )
   }
 
   private createPrompt() {

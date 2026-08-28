@@ -73,7 +73,7 @@ describe('addInput canvas click', () => {
     expect(onFullscreen).toHaveBeenCalledOnce()
   })
 
-  it('maps numbered debug actions from 1 through 7', async () => {
+  it('maps numbered debug actions from 1 through 8', async () => {
     const canvas = new FakeCanvas()
     const windowTarget = new EventTarget()
     const actions = {
@@ -81,6 +81,7 @@ describe('addInput canvas click', () => {
       onAntialiasing: vi.fn(),
       onUpscaling: vi.fn(),
       onFramerate: vi.fn(),
+      onGrid: vi.fn(),
       onResetDefaults: vi.fn(),
       onRestart: vi.fn()
     }
@@ -88,7 +89,7 @@ describe('addInput canvas click', () => {
 
     addInput(canvas as unknown as HTMLCanvasElement, {} as Scene, actions)
 
-    for (const key of ['1', '3', '4', '5', '6', '7']) {
+    for (const key of ['1', '3', '4', '5', '6', '7', '8']) {
       keydown(windowTarget, key)
     }
     await Promise.resolve()
@@ -97,6 +98,7 @@ describe('addInput canvas click', () => {
     expect(actions.onAntialiasing).toHaveBeenCalledOnce()
     expect(actions.onUpscaling).toHaveBeenCalledOnce()
     expect(actions.onFramerate).toHaveBeenCalledOnce()
+    expect(actions.onGrid).toHaveBeenCalledOnce()
     expect(actions.onResetDefaults).toHaveBeenCalledOnce()
     expect(actions.onRestart).toHaveBeenCalledOnce()
   })

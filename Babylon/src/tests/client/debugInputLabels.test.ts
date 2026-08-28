@@ -14,8 +14,9 @@ describe('debug input labels', () => {
     expect(labels).toContain('3 = Toggle Antialias')
     expect(labels).toContain('4 = Toggle Upscaling')
     expect(labels).toContain('5 = Toggle FPS')
-    expect(labels).toContain('6 = Reset to Defaults (Disk)')
-    expect(labels).toContain('7 = Restart Scene')
+    expect(labels).toContain('6 = Toggle Grid')
+    expect(labels).toContain('7 = Reset to Defaults (Disk)')
+    expect(labels).toContain('8 = Restart Scene')
     expect(labels).not.toContain('3 Finger Tap = Mobile Mode')
     expect(mobileDebugInputLabels).toEqual([
       '3 Finger Tap = Mobile Mode'

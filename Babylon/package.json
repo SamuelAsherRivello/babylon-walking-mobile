@@ -1,9 +1,12 @@
 {
+  "name": "babylon",
+  "private": true,
   "type": "module",
   "scripts": {
-    "start": "vite --host --open",
+    "start": "vite --host",
+    "start:open": "start microsoft-edge:http://localhost:5173",
     "build": "vite build",
-    "preview": "vite preview --host --open",
+    "preview": "vite preview --host",
     "check": "tsc",
     "run_unit_tests": "npx vitest run"
   },

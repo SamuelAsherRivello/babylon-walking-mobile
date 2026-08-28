@@ -31,10 +31,10 @@ WebGPU on PC and Mobile.
 
 ## Live Demo
 
-https://samuelasherrivello.github.io/babylon-walking-mobile/releases/v0.05/
+https://samuelasherrivello.github.io/babylon-walking-mobile/releases/v0.05.2/
 
-The verified link above opens `v0.05` directly. The stable newest-release route
-is https://samuelasherrivello.github.io/babylon-walking-mobile/latest/.
+The verified link above opens `v0.05.2` directly. The stable newest-release
+route is https://samuelasherrivello.github.io/babylon-walking-mobile/latest/.
 Immutable builds are available under `/releases/<version>/` for replaying a
 specific version.
 
@@ -61,10 +61,12 @@ WebGPU not working? See [Troubleshooting](#troubleshooting).
 ### Play Project
 
 1. Clone or download this repo.
-2. Open the `Babylon` folder in a command line.
-3. Run `npm install` to download and install dependencies.
-4. Run `npm run build` to build the project.
-5. Run `npm start` to launch a local development server.
+2. Open the repository root in a command line.
+3. Run `npm install` to install the `Babylon` workspace dependencies.
+4. Open the `Babylon` folder in the command line.
+5. Run `npm run build` to build the project.
+6. Run `npm start` to launch a local development server.
+7. Run `npm run start:open` to open the app in Microsoft Edge.
 
 <!-- AI: Keep this release process brief and numbered. -->
 
@@ -80,11 +82,12 @@ WebGPU not working? See [Troubleshooting](#troubleshooting).
 
 | # | Name | Command | Comment |
 | --- | --- | --- | --- |
-| 1 | Install | `npm install` | Downloads and installs dependencies. |
+| 1 | Install | `npm install` | Run from the repository root. |
 | 2 | Build | `npm run build` | Builds the app. |
 | 3 | Start | `npm start` | Runs the app locally with hot reload. |
-| 4 | Check | `npm run check` | Checks TypeScript. |
-| 5 | Test | `npm run run_unit_tests` | Runs unit tests. |
+| 4 | Open (Edge Tab) | `npm run start:open` | Opens `http://localhost:5173`. |
+| 5 | Check | `npm run check` | Checks TypeScript. |
+| 6 | Test | `npm run run_unit_tests` | Runs unit tests. |
 
 <!-- AI: This section summarizes the repository at a high level. -->
 
@@ -111,7 +114,6 @@ TypeScript, and WebGPU.
 
 - `Babylon`: Main project folder.
 - `.github/workflows`: Release-triggered GitHub Pages publishing.
-- `Babylon/public/assets/glb/`: GLB assets.
 - `Babylon/public/index.html`: Entry HTML page.
 - `Babylon/src/client/styles/`: CSS styling.
 - `Babylon/src/client/scripts/`: Client TypeScript logic.
@@ -122,7 +124,8 @@ TypeScript, and WebGPU.
 
 ### Dependencies
 
-- `Babylon/package.json`: Lists dependencies and scripts.
+- `package.json`: Defines the npm workspace.
+- `Babylon/package.json`: Lists app dependencies and scripts.
 
 <!-- AI: This section explains tools and the specification workflow. -->
 

@@ -41,8 +41,8 @@ the browser application starts or the game is restarted.
 ### Requirement: Initial level layout
 
 Every level SHALL use the existing green ground and SHALL spawn the player at
-the world origin. The world SHALL contain a zone titled `START` centered at the
-origin and an Apple zone centered at `(0, 0, 7)`. The `START` zone SHALL have
+the world origin. The world SHALL contain a zone titled `Home` centered at the
+origin and an Apple zone centered at `(-6, 0, 6)`. The `Home` zone SHALL have
 `isEnabled` set to `false`, SHALL remain in its default color, and SHALL NOT
 emit entry or exit events. The Apple zone SHALL contain one tree. The HUD SHALL
 show exactly as many inventory slots as the active level's apple target, and
@@ -51,8 +51,8 @@ every available slot SHALL be empty when a level starts.
 #### Scenario: Level starts
 
 - **WHEN** any level begins
-- **THEN** the player appears at `(0, 0.5, 0)` inside the START marker
-- **AND** the START marker remains in its default color
+- **THEN** the player appears at `(0, 0.5, 0)` inside the Home marker
+- **AND** the Home marker remains in its default color
 - **AND** one tree and the Apple zone are visible near the positive-Z edge
 - **AND** the visible inventory slot count matches the active level number
 - **AND** every visible inventory slot is empty
@@ -63,9 +63,9 @@ every available slot SHALL be empty when a level starts.
 - **THEN** exactly one, two, or three inventory slots are visible respectively
 - **AND** no unavailable inventory slot is visible or interactive
 
-#### Scenario: Player crosses the START marker boundary
+#### Scenario: Player crosses the Home marker boundary
 
-- **WHEN** the player enters or exits the disabled START marker
+- **WHEN** the player enters or exits the disabled Home marker
 - **THEN** its color remains unchanged
 - **AND** it emits no entry or exit event
 
@@ -80,8 +80,8 @@ every available slot SHALL be empty when a level starts.
 
 Each zone MAY declare a model. A declared tree model SHALL create the existing
 tree at the exact center of that zone's background area. The Apple zone SHALL
-be 3 units wide and 3 units deep, SHALL be centered at `(0, 0, 7)`, and SHALL
-declare the tree model. The disabled START zone SHALL be centered at the
+be 3 units wide and 3 units deep, SHALL be centered at `(-6, 0, 6)`, and SHALL
+declare the tree model. The disabled Home zone SHALL be centered at the
 origin, SHALL remain 3 units wide and 3 units deep, and SHALL NOT declare a
 model.
 
@@ -89,12 +89,12 @@ model.
 
 - **WHEN** the shared level layout creates the Apple zone
 - **THEN** its background dimensions are 3 units by 3 units
-- **AND** its center is at `(0, 0, 7)`
+- **AND** its center is at `(-6, 0, 6)`
 - **AND** exactly one tree is created at the background area's center
 
-#### Scenario: START zone is created
+#### Scenario: Home zone is created
 
-- **WHEN** the shared level layout creates the START zone
+- **WHEN** the shared level layout creates the Home zone
 - **THEN** its center is at the world origin
 - **AND** it creates no model
 - **AND** it is disabled
@@ -230,7 +230,7 @@ click audibly before level advancement or application reload.
 ### Requirement: Clean gameplay replay
 
 Activating `OK` after Level 1 or Level 2 SHALL advance in place to the next
-level with new quest state. The player SHALL return to START, inventory SHALL
+level with new quest state. The player SHALL return to Home, inventory SHALL
 be emptied, the HUD title SHALL show the next level and quest, the completion
 prompt SHALL close, and gameplay input SHALL resume. Activating `OK` after
 Level 3 SHALL reload the application and start Level 1 with new in-memory
@@ -241,7 +241,7 @@ gameplay state. Restart MUST NOT erase saved debug preferences.
 - **WHEN** the user activates `OK` after Level 1 or Level 2
 - **THEN** the application does not reload
 - **AND** the next numbered level and quest start
-- **AND** the player returns to START with an empty inventory
+- **AND** the player returns to Home with an empty inventory
 - **AND** the visible inventory slot count matches the next level number
 - **AND** gameplay input resumes
 

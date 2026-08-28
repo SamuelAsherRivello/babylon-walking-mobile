@@ -31,23 +31,24 @@ jobs:
         run: |
           set -euo pipefail
           release_version="${{ github.event.release.tag_name }}"
-          version_pattern='^v[0-9]+([.][0-9]+){1,2}'
-          version_pattern+='(-[0-9A-Za-z.-]+)?$'
+          version_pattern='^v[0-9]+[.][0-9]+[.][0-9]+$'
           if ! [[ "${release_version}" =~ ${version_pattern} ]]; then
-            echo "::error::Release tag must look like v0.01 or v1.2.3."
+            echo "::error::Release tag must look like v0.0.0."
             exit 1
           fi
           echo "RELEASE_VERSION=${release_version}" >> "${GITHUB_ENV}"
+          printf '{\n  "releaseVersion": "%s"\n}\n' \
+            "${release_version}" \
+            > Babylon/public/environment.json
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: Babylon/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: Babylon
         run: npm ci
 
       - name: Check TypeScript
@@ -67,12 +68,12 @@ jobs:
         run: |
           set -euo pipefail
           test -f Babylon/dist/index.html
+          test -f Babylon/dist/environment.json
           test -f Babylon/dist/HavokPhysics.wasm
           test -f Babylon/dist/assets/audio/sfx/rotate.wav
           test -f Babylon/dist/assets/audio/sfx/levelup.wav
           test -f Babylon/dist/assets/images/inventory/apple.png
           test -f Babylon/dist/assets/models/tree/MapleTree_4.gltf
-          test -f Babylon/dist/assets/models/glb/pixel_room.glb
 
       - name: Package release web build
         shell: bash

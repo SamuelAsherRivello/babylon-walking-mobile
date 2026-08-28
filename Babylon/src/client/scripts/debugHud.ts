@@ -1,5 +1,14 @@
 // debugHud.ts - Owns optional development diagnostics and shortcuts.
 import { BabylonConfigurationModel } from './model/babylonConfigurationModel'
+import {
+  debugHudCorner,
+  getDebugHudCornerPosition
+} from './debugHudLayout'
+import {
+  readDebugHudPanelState,
+  writeDebugHudPanelCollapsed,
+  type DebugHudPanelId
+} from './debugHudPanelState'
 import type {
   RenderResolution,
   RenderResolutionSnapshot,
@@ -42,7 +51,6 @@ function formatPowerPreference(
 
 function formatConfigText(configuration: BabylonConfigurationModel) {
   const lines = [
-    'Config',
     `* Antialias = ${configuration.antialias}`,
     `* AdaptToDeviceRatio = ${configuration.adaptToDeviceRatio}`,
     `* PowerPreference = ${
@@ -61,7 +69,7 @@ function formatRenderingText(
   fps?: number,
   targetFPS?: number
 ) {
-  const lines = ['Rendering', `* Type = ${renderingType}`]
+  const lines = [`* Type = ${renderingType}`]
 
   if (displayResolution) {
     lines.push(`* Total Rez = ${displayResolution}`)
@@ -84,17 +92,76 @@ function formatRenderingText(
   return formatBlock(lines)
 }
 
-function appendOverlayPanel(
+interface HudPanel {
+  panel: TextElement
+  setHTML: (html: string) => void
+}
+
+function appendHudPanel(
   cornerUI: HTMLDivElement,
-  lines: string[]
-) {
+  panelId: DebugHudPanelId,
+  title: string,
+  html: string,
+  isInitiallyCollapsed: boolean,
+  storage: Storage | undefined
+): HudPanel {
   const panel = new TextElement('', '70px')
-  panel.setHTML(formatBlock(lines))
-  panel.element.style.position = 'static'
+  panel.element.style.position = 'relative'
+  panel.element.style.top = 'auto'
+  panel.element.style.right = 'auto'
+  panel.element.style.bottom = 'auto'
+  panel.element.style.left = 'auto'
   panel.element.style.margin = '0'
+  panel.element.classList.add('DebugHudPanel')
+
+  const header = document.createElement('div')
+  header.className = 'DebugHudInputHeader'
+
+  const heading = document.createElement('strong')
+  heading.textContent = title
+  header.appendChild(heading)
+
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'DebugHudCollapseButton'
+  button.textContent = 'x'
+  button.setAttribute('aria-expanded', 'true')
+  button.setAttribute('aria-label', `Collapse ${title}`)
+  header.appendChild(button)
+
+  const content = document.createElement('div')
+  content.className = 'DebugHudPanelContent'
+
+  const setHTML = (nextHTML: string) => {
+    content.innerHTML = nextHTML
+  }
+
+  let isCollapsed = isInitiallyCollapsed
+  const applyCollapsedState = () => {
+    content.hidden = isCollapsed
+    button.setAttribute('aria-expanded', String(!isCollapsed))
+    button.setAttribute(
+      'aria-label',
+      `${isCollapsed ? 'Expand' : 'Collapse'} ${title}`
+    )
+  }
+
+  button.addEventListener('click', () => {
+    isCollapsed = !isCollapsed
+    applyCollapsedState()
+    writeDebugHudPanelCollapsed(
+      storage,
+      panelId,
+      isCollapsed
+    )
+  })
+
+  setHTML(html)
+  applyCollapsedState()
+  panel.element.replaceChildren(header, content)
   cornerUI.appendChild(panel.element)
 
-  return panel
+  return { panel, setHTML }
 }
 
 export class DebugHud {
@@ -111,6 +178,9 @@ export class DebugHud {
   private currentTargetFPS = 60
   private isVisible = true
   private readonly cornerUI: HTMLDivElement
+  private readonly configPanel: HudPanel
+  private readonly renderPanel: HudPanel
+  private readonly shortcutsPanel?: HudPanel
 
   public constructor(
     private readonly configuration: BabylonConfigurationModel,
@@ -118,49 +188,69 @@ export class DebugHud {
     shortcuts?: string[],
     renderingResolution?: RenderResolutionSnapshot,
     runtimeInputs?: string[],
-    mobileShortcuts?: string[]
+    mobileShortcuts?: string[],
+    storage?: Storage
   ) {
     if (renderingResolution) {
       this.setRenderingResolutionState(renderingResolution)
     }
     this.cornerUI = this.getOrCreateCornerUI()
+    const panelState = readDebugHudPanelState(storage)
 
-    this.configElem = new TextElement('', '10px')
-    this.configElem.setHTML(formatConfigText(configuration))
-    this.appendElement(this.configElem)
+    this.configPanel = appendHudPanel(
+      this.cornerUI,
+      'config',
+      'Config',
+      formatConfigText(configuration),
+      panelState.config,
+      storage
+    )
+    this.configElem = this.configPanel.panel
 
-    this.renderElem = new TextElement('', '10px')
-    this.updateRenderingText()
-    this.appendElement(this.renderElem)
+    this.renderPanel = appendHudPanel(
+      this.cornerUI,
+      'rendering',
+      'Rendering',
+      this.getRenderingText(),
+      panelState.rendering,
+      storage
+    )
+    this.renderElem = this.renderPanel.panel
 
     if (shortcuts) {
-      this.shortcutsElem = appendOverlayPanel(
+      this.shortcutsPanel = appendHudPanel(
         this.cornerUI,
-        [
-          'Debug Input (PC)',
-          ...shortcuts.map(value => `* ${value}`)
-        ]
+        'pc-input',
+        'Debug Input (PC)',
+        this.formatInputLines(shortcuts),
+        panelState['pc-input'],
+        storage
       )
+      this.shortcutsElem = this.shortcutsPanel.panel
     }
 
     if (mobileShortcuts) {
-      this.mobileShortcutsElem = appendOverlayPanel(
+      const mobilePanel = appendHudPanel(
         this.cornerUI,
-        [
-          'Debug Input (Mobile)',
-          ...mobileShortcuts.map(value => `* ${value}`)
-        ]
+        'mobile-input',
+        'Debug Input (Mobile)',
+        this.formatInputLines(mobileShortcuts),
+        panelState['mobile-input'],
+        storage
       )
+      this.mobileShortcutsElem = mobilePanel.panel
     }
 
     if (runtimeInputs) {
-      this.runtimeInputsElem = appendOverlayPanel(
+      const runtimePanel = appendHudPanel(
         this.cornerUI,
-        [
-          'Runtime Input',
-          ...runtimeInputs.map(value => `* ${value}`)
-        ]
+        'runtime-input',
+        'Runtime Input',
+        this.formatInputLines(runtimeInputs),
+        panelState['runtime-input'],
+        storage
       )
+      this.runtimeInputsElem = runtimePanel.panel
     }
   }
 
@@ -176,16 +266,13 @@ export class DebugHud {
   }
 
   public setShortcuts(nextShortcuts: string[]) {
-    this.shortcutsElem?.setHTML(
-      formatBlock([
-        'Debug Input (PC)',
-        ...nextShortcuts.map(value => `* ${value}`)
-      ])
+    this.shortcutsPanel?.setHTML(
+      this.formatInputLines(nextShortcuts)
     )
   }
 
   public setConfig() {
-    this.configElem.setHTML(formatConfigText(this.configuration))
+    this.configPanel.setHTML(formatConfigText(this.configuration))
   }
 
   public setRenderingResolution(
@@ -211,28 +298,36 @@ export class DebugHud {
       | null
 
     if (existing) {
+      this.applyCornerPosition(existing)
+
       return existing
     }
 
     const cornerUI = document.createElement('div')
     cornerUI.id = 'CornerUI'
     cornerUI.style.position = 'fixed'
-    cornerUI.style.right = '10px'
-    cornerUI.style.bottom = '10px'
     cornerUI.style.display = 'flex'
     cornerUI.style.flexDirection = 'column'
-    cornerUI.style.alignItems = 'flex-end'
     cornerUI.style.gap = '8px'
     cornerUI.style.zIndex = '1001'
+    this.applyCornerPosition(cornerUI)
     document.body.appendChild(cornerUI)
 
     return cornerUI
   }
 
-  private appendElement(element: TextElement) {
-    element.element.style.position = 'static'
-    element.element.style.margin = '0'
-    this.cornerUI.appendChild(element.element)
+  private applyCornerPosition(cornerUI: HTMLDivElement) {
+    const position = getDebugHudCornerPosition(debugHudCorner)
+
+    cornerUI.style.top = position.top
+    cornerUI.style.right = position.right
+    cornerUI.style.bottom = position.bottom
+    cornerUI.style.left = position.left
+    cornerUI.style.alignItems = position.alignItems
+  }
+
+  private formatInputLines(lines: string[]) {
+    return formatBlock(lines.map(value => `* ${value}`))
   }
 
   private formatResolution(resolution: RenderResolution) {
@@ -252,15 +347,17 @@ export class DebugHud {
   }
 
   private updateRenderingText() {
-    this.renderElem?.setHTML(
-      formatRenderingText(
-        this.renderingType,
-        this.currentDisplayResolution,
-        this.currentRenderResolution,
-        this.currentUpscalingMode,
-        this.currentFPS,
-        this.currentTargetFPS
-      )
+    this.renderPanel?.setHTML(this.getRenderingText())
+  }
+
+  private getRenderingText() {
+    return formatRenderingText(
+      this.renderingType,
+      this.currentDisplayResolution,
+      this.currentRenderResolution,
+      this.currentUpscalingMode,
+      this.currentFPS,
+      this.currentTargetFPS
     )
   }
 }

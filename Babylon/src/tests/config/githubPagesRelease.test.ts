@@ -13,6 +13,26 @@ const workflowPath = path.join(
 )
 
 describe('GitHub Pages release publishing', () => {
+  it('installs the Babylon workspace from the repository root', () => {
+    const rootPackagePath = path.join(repositoryRoot, 'package.json')
+
+    expect(existsSync(rootPackagePath)).toBe(true)
+
+    if (!existsSync(rootPackagePath)) {
+      return
+    }
+
+    const rootPackage = JSON.parse(
+      readFileSync(rootPackagePath, 'utf8')
+    ) as {
+      private?: boolean
+      workspaces?: string[]
+    }
+
+    expect(rootPackage.private).toBe(true)
+    expect(rootPackage.workspaces).toContain('Babylon')
+  })
+
   it('builds Vite assets with paths relative to each release folder',
     async () => {
       const config = await resolveConfig(
@@ -23,6 +43,9 @@ describe('GitHub Pages release publishing', () => {
       )
 
       expect(config.base).toBe('./')
+      expect(path.normalize(config.cacheDir)).toBe(
+        path.join(repositoryRoot, 'node_modules', '.vite', 'babylon')
+      )
     })
 
   it('uses the Vite base URL for runtime audio assets', () => {
@@ -45,12 +68,47 @@ describe('GitHub Pages release publishing', () => {
     const workflow = readFileSync(workflowPath, 'utf8')
 
     expect(workflow).toMatch(/release:\s*\n\s*types:\s*\n\s*- published/)
-    expect(workflow).toContain('working-directory: Babylon')
+    expect(workflow).toContain('cache-dependency-path: package-lock.json')
+    expect(workflow).not.toContain(
+      'cache-dependency-path: Babylon/package-lock.json'
+    )
     expect(workflow).toContain('npm ci')
     expect(workflow).toContain('npm run build')
     expect(workflow).toContain('actions/upload-pages-artifact@v3')
     expect(workflow).toContain('actions/deploy-pages@v4')
     expect(workflow).toContain('pages-store/releases/${release_version}')
+  })
+
+  it('writes an exact release version to the runtime environment', () => {
+    const workflow = readFileSync(workflowPath, 'utf8')
+    const environmentPath = path.join(
+      babylonRoot,
+      'public',
+      'environment.json'
+    )
+
+    expect(workflow).toContain(
+      "version_pattern='^v[0-9]+[.][0-9]+[.][0-9]+$'"
+    )
+    expect(workflow).toContain(
+      '> Babylon/public/environment.json'
+    )
+    expect(workflow).toContain('"releaseVersion": "%s"')
+    expect(workflow).toContain('Babylon/dist/environment.json')
+    expect(workflow).toContain(
+      'Release tag must look like v0.0.0.'
+    )
+    expect(existsSync(environmentPath)).toBe(true)
+
+    if (!existsSync(environmentPath)) {
+      return
+    }
+
+    const environment = JSON.parse(
+      readFileSync(environmentPath, 'utf8')
+    ) as { releaseVersion?: string }
+
+    expect(environment.releaseVersion).toBe('v0.05.2')
   })
 
   it('documents the live demo and versioned releases', () => {

@@ -87,7 +87,7 @@ const sharedZoneDefinitions: readonly LevelZoneDefinition[] = [
     position: { x: 0, y: 0, z: 0 },
     size_x: 3,
     size_z: 3,
-    title: 'START',
+    title: 'Home',
     titleScale: 1,
     titleSide: 'side-2'
   },
@@ -95,7 +95,7 @@ const sharedZoneDefinitions: readonly LevelZoneDefinition[] = [
     id: 'apple',
     isEnabled: true,
     isTriggerable: true,
-    position: { x: -6, y: 0, z: 7 },
+    position: { x: -6, y: 0, z: 6 },
     size_x: 3,
     size_z: 3,
     title: 'Apple',
