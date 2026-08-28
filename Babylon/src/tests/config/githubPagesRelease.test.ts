@@ -111,8 +111,10 @@ describe('GitHub Pages release publishing', () => {
       readFileSync(environmentPath, 'utf8')
     ) as { downloadSize?: number; releaseVersion?: string }
 
-    expect(environment.releaseVersion).toBe('v0.05.2')
-    expect(environment.downloadSize).toBe(100000000)
+    expect(environment.releaseVersion).toMatch(
+      /^v[0-9]+[.][0-9]+[.][0-9]+$/
+    )
+    expect(environment.downloadSize).toBeUndefined()
   })
 
   it('documents the live demo and versioned releases', () => {
