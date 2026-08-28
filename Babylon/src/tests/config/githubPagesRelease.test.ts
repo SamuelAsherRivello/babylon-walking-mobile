@@ -94,6 +94,9 @@ describe('GitHub Pages release publishing', () => {
       '> Babylon/public/environment.json'
     )
     expect(workflow).toContain('"releaseVersion": "%s"')
+    expect(workflow).toContain('"downloadSize": "000000000000"')
+    expect(workflow).toContain('Record total browser download size')
+    expect(workflow).toContain('artifact_size=')
     expect(workflow).toContain('Babylon/dist/environment.json')
     expect(workflow).toContain(
       'Release tag must look like v0.0.0.'
@@ -106,9 +109,10 @@ describe('GitHub Pages release publishing', () => {
 
     const environment = JSON.parse(
       readFileSync(environmentPath, 'utf8')
-    ) as { releaseVersion?: string }
+    ) as { downloadSize?: number; releaseVersion?: string }
 
     expect(environment.releaseVersion).toBe('v0.05.2')
+    expect(environment.downloadSize).toBe(100000000)
   })
 
   it('documents the live demo and versioned releases', () => {

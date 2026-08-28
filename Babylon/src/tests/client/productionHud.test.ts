@@ -142,6 +142,9 @@ describe('production HUD', () => {
     expect(leftGroup).not.toContain("'Inventory:'")
     expect(leftGroup).not.toContain('Quest')
     expect(source).toContain('const VERSION_FONT_SIZE = 24')
+    expect(source).toContain(
+      'downloadSize ? `${version} ${downloadSize}` : version'
+    )
     expect(leftGroup).toContain('textWrapping = false')
     expect(versionIndex).toBeGreaterThan(-1)
     expect(titleIndex).toBeGreaterThan(versionIndex)

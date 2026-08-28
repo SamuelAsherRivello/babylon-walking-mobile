@@ -99,7 +99,8 @@ export class ProductionHud {
     scene: Scene,
     levelName: string,
     version: string,
-    slotCount = 5
+    slotCount = 5,
+    downloadSize = ''
   ) {
     this.levelName = levelName
     this.texture = AdvancedDynamicTexture.CreateFullscreenUI(
@@ -112,6 +113,7 @@ export class ProductionHud {
     const leftGroup = this.createLeftGroup(
       levelName,
       version,
+      downloadSize,
       slotCount
     )
     this.levelScoreText = leftGroup.levelScoreText
@@ -265,6 +267,7 @@ export class ProductionHud {
   private createLeftGroup(
     levelName: string,
     version: string,
+    downloadSize: string,
     slotCount: number
   ) {
     const leftGroup = new StackPanel('ProductionHudLeft')
@@ -277,7 +280,7 @@ export class ProductionHud {
 
     const versionText = createText(
       'ReleaseVersion',
-      version,
+      downloadSize ? `${version} ${downloadSize}` : version,
       PRODUCTION_LABEL_HEIGHT,
       VERSION_FONT_SIZE
     )

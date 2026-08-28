@@ -38,7 +38,9 @@ import { createPrototypeCamera } from '../view/3d/prototypeScene'
 import { ResolutionDebugGrid } from '../view/2d/resolutionDebugGrid'
 import { RenderScheduler } from '../view/3d/renderScheduler'
 import { createRenderingEngine } from '../view/3d/renderingEngineFactory'
-import { loadReleaseVersion } from '../model/releaseVersion'
+import {
+  loadReleaseMetadata
+} from '../model/releaseVersion'
 import { createPreloader } from '../view/2d/preloader'
 import {
   RenderResolutionController,
@@ -61,9 +63,10 @@ const clickSoundVolume = 0.35
 async function main() {
   const preloader = createPreloader(document)
   preloader.setStatus('Loading game data...')
-  const releaseVersion = await loadReleaseVersion(
+  const releaseMetadata = await loadReleaseMetadata(
     import.meta.env.BASE_URL
   )
+  const releaseVersion = releaseMetadata.releaseVersion
   const canvas = document.createElement('canvas')
   document.body.append(canvas)
   const portraitMobileMedia = window.matchMedia(
@@ -323,7 +326,8 @@ async function main() {
     scene,
     progression.activeLevelDefinition.name,
     releaseVersion,
-    maximumInventorySlotCount
+    maximumInventorySlotCount,
+    releaseMetadata.downloadSize
   )
   const virtualController = productionHud.addVirtualController({
     actions: gameplayActions,

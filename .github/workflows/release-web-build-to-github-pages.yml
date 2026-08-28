@@ -37,7 +37,7 @@ jobs:
             exit 1
           fi
           echo "RELEASE_VERSION=${release_version}" >> "${GITHUB_ENV}"
-          printf '{\n  "releaseVersion": "%s"\n}\n' \
+          printf '{\n  "releaseVersion": "%s",\n  "downloadSize": "000000000000"\n}\n' \
             "${release_version}" \
             > Babylon/public/environment.json
 
@@ -63,12 +63,32 @@ jobs:
         working-directory: Babylon
         run: npm run build
 
+      - name: Record total browser download size
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact_size="$(find Babylon/dist -type f -printf '%s\n' | \
+            awk '{ total += $1 } END { print total }')"
+          if ! [[ "${artifact_size}" =~ ^[0-9]{1,12}$ ]]; then
+            echo "::error::Artifact size is outside the metadata field width."
+            exit 1
+          fi
+          padded_size="$(printf '%012d' "${artifact_size}")"
+          sed -i -E \
+            "s/\"downloadSize\": \"[0-9]+\"/\"downloadSize\": \"${padded_size}\"/" \
+            Babylon/dist/environment.json
+          final_size="$(find Babylon/dist -type f -printf '%s\n' | \
+            awk '{ total += $1 } END { print total }')"
+          test "${final_size}" = "${artifact_size}"
+
       - name: Validate browser build
         shell: bash
         run: |
           set -euo pipefail
           test -f Babylon/dist/index.html
           test -f Babylon/dist/environment.json
+          grep -Eq '"downloadSize": "[0-9]{12}"' \
+            Babylon/dist/environment.json
           test -f Babylon/dist/HavokPhysics.wasm
           test -f Babylon/dist/assets/audio/sfx/rotate.wav
           test -f Babylon/dist/assets/audio/sfx/levelup.wav

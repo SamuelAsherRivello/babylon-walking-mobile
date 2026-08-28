@@ -14,10 +14,8 @@ describe('prototype scene bootstrap', () => {
   it('loads runtime metadata once and passes it to the production HUD', () => {
     const source = readClientSource()
 
-    expect(source).toContain(
-      "import { loadReleaseVersion } from '../model/releaseVersion'"
-    )
-    expect(source).toContain('await loadReleaseVersion(')
+    expect(source).toContain('loadReleaseMetadata')
+    expect(source).toContain('await loadReleaseMetadata(')
     expect(source).toContain('import.meta.env.BASE_URL')
     expect(source).not.toContain('import.meta.env.VITE_RELEASE_VERSION')
     expect(source).toContain('releaseVersion,')
