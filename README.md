@@ -4,7 +4,8 @@ AI reading guide:
 - Read the page from demo, to setup, to internals, to support.
 - Keep commands consistent with Babylon/package.json.
 - Keep authored lines at 80 characters or fewer.
-- Keep the stable and versioned release routes documented under Live Demo.
+- Keep only the stable `/latest/` release route under Live Demo.
+- Do not update this README for each release; `/latest/` updates automatically.
 -->
 
 # Babylon Walking Mobile
@@ -28,14 +29,11 @@ WebGPU on PC and Mobile.
 </figure>
 
 <!-- AI: This section provides the public build and a support shortcut. -->
+<!-- AI: Do not add version-specific links when publishing a new release. -->
 
 ## Live Demo
 
 <https://samuelasherrivello.github.io/babylon-walking-mobile/latest/>
-
-<https://samuelasherrivello.github.io/babylon-walking-mobile/releases/v0.05.6/>
-
-Versioned releases also use the route `/releases/<version>/`.
 
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 

@@ -50,7 +50,10 @@ describe('GitHub Pages release publishing', () => {
 
   it('uses the Vite base URL for runtime audio assets', () => {
     const source = readFileSync(
-      path.join(babylonRoot, 'src', 'client', 'scripts', 'controller', 'index.ts'),
+      path.join(
+        babylonRoot,
+        'src/client/scripts/controller/index.ts'
+      ),
       'utf8'
     )
 
@@ -119,7 +122,7 @@ describe('GitHub Pages release publishing', () => {
     )
   })
 
-  it('documents the live demo and versioned releases', () => {
+  it('documents the stable live demo without per-release edits', () => {
     const readme = readFileSync(
       path.join(repositoryRoot, 'README.md'),
       'utf8'
@@ -130,6 +133,11 @@ describe('GitHub Pages release publishing', () => {
       'https://samuelasherrivello.github.io/' +
         'babylon-walking-mobile/latest/'
     )
-    expect(readme).toContain('/releases/<version>/')
+    expect(readme).toContain(
+      'Do not update this README for each release'
+    )
+    expect(readme).not.toMatch(
+      /babylon-walking-mobile\/releases\/v\d/
+    )
   })
 })

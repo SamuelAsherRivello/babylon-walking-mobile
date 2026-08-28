@@ -23,3 +23,12 @@ Note: Before committing and publishing a release, update
 Keep the checked-in version, GitHub tag, release notes, and published HUD value
 aligned.
 Source: user
+
+## 2026-08-28 - Stable README play link
+
+Type: Convention
+Scope: documentation
+Note: Keep only the stable `/latest/` GitHub Pages link in the README Live Demo
+section. Do not edit the README for each release because that route updates
+automatically. Keep version-specific release routes out of the README.
+Source: user
