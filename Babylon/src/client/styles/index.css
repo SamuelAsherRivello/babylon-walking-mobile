@@ -35,6 +35,82 @@ canvas {
   transform: translateX(-50%);
 }
 
+#game-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 50% 38%, #263449 0%, #111827 58%);
+  color: #f8fafc;
+  opacity: 1;
+  transition: opacity 280ms ease;
+}
+
+#game-preloader.is-complete {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader-card {
+  width: min(300px, calc(100vw - 48px));
+  text-align: center;
+}
+
+.preloader-mark {
+  color: #f59e0b;
+  font-size: 2.5rem;
+  line-height: 1;
+  animation: preloader-pulse 1.3s ease-in-out infinite;
+}
+
+.preloader-kicker {
+  margin: 18px 0 8px;
+  color: #f8fafc;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.preloader-status {
+  margin: 0 0 18px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.preloader-track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.preloader-track span {
+  display: block;
+  width: 45%;
+  height: 100%;
+  border-radius: inherit;
+  background: #f59e0b;
+  animation: preloader-progress 1.4s ease-in-out infinite;
+}
+
+#game-preloader.is-error .preloader-mark,
+#game-preloader.is-error .preloader-track span {
+  background: #f87171;
+  color: #f87171;
+  animation: none;
+}
+
+@keyframes preloader-pulse {
+  50% { transform: scale(1.12); opacity: 0.7; }
+}
+
+@keyframes preloader-progress {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(245%); }
+}
+
 /* Overlay for WebGPU info messages */
 
 .info-overlay {

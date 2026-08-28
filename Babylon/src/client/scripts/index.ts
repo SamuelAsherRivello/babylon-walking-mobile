@@ -39,6 +39,7 @@ import { ResolutionDebugGrid } from './resolutionDebugGrid'
 import { RenderScheduler } from './renderScheduler'
 import { createRenderingEngine } from './renderingEngineFactory'
 import { loadReleaseVersion } from './releaseVersion'
+import { createPreloader } from './preloader'
 import {
   RenderResolutionController,
   cycleUpscalingMode,
@@ -58,7 +59,8 @@ const backgroundMusicVolume = 0.15
 const clickSoundVolume = 0.35
 
 async function main() {
-  const showLoader = false
+  const preloader = createPreloader(document)
+  preloader.setStatus('Loading game data...')
   const releaseVersion = await loadReleaseVersion(
     import.meta.env.BASE_URL
   )
@@ -85,24 +87,6 @@ async function main() {
     )
   }
   updateCanvasPresentation()
-
-  if (showLoader) {
-    const loaderDiv = document.createElement('div')
-    loaderDiv.id = 'custom-loader'
-    loaderDiv.style.position = 'fixed'
-    loaderDiv.style.top = '0'
-    loaderDiv.style.left = '0'
-    loaderDiv.style.width = '100vw'
-    loaderDiv.style.height = '100vh'
-    loaderDiv.style.background = 'rgba(0,0,0,0.7)'
-    loaderDiv.style.display = 'flex'
-    loaderDiv.style.justifyContent = 'center'
-    loaderDiv.style.alignItems = 'center'
-    loaderDiv.style.zIndex = '2000'
-    loaderDiv.innerHTML =
-      '<span style="color:white;font-size:2em">Loading...</span>'
-    document.body.appendChild(loaderDiv)
-  }
 
   const uiContainer = document.createElement('div')
   uiContainer.style.position = 'absolute'
@@ -200,6 +184,8 @@ async function main() {
     }
   })
   engine = engineResult.engine
+  engine.loadingScreen = preloader
+  engine.displayLoadingUI()
   const readRenderViewport = (): RenderViewport => {
     return {
       width: canvas.clientWidth,
@@ -221,6 +207,7 @@ async function main() {
     initialRenderingResolution.displayResolution
   )
   scene = new BABYLON.Scene(engine)
+  preloader.setStatus('Building the world...')
   debugHud = new DebugHud(
     configuration,
     engineResult.renderingType,
@@ -459,13 +446,8 @@ async function main() {
     })
   })
 
-  if (showLoader) {
-    const loaderDiv = document.getElementById('custom-loader')
-    if (loaderDiv) {
-      loaderDiv.remove()
-    }
-  }
-
+  preloader.setStatus('Ready')
+  engine.hideLoadingUI()
 
   const pipeline = addPostProcess(scene, [camera])
 
