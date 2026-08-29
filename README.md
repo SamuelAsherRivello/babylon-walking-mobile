@@ -21,7 +21,7 @@ WebGPU on PC and Mobile.
   <img
     alt="screenshot"
     src="./Babylon/documentation/images/Screenshot01.png"
-    width="600px"
+    width="400px"
   >
   <figcaption>
     Image 1 - Babylon.js Game Engine - HTML5 + WebGPU
