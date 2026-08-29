@@ -35,7 +35,7 @@ WebGPU on PC and Mobile.
 
 [https://samuelasherrivello.github.io/babylon-walking-mobile/latest/][x]
 
-[x]: https://samuelasherrivello.github.io/babylon-walking-mobile/latest/?v=0056
+[x]: https://samuelasherrivello.github.io/babylon-walking-mobile/latest/?v=0058
 
 WebGPU not working? See [Troubleshooting](#troubleshooting).
 
