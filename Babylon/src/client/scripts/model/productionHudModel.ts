@@ -5,6 +5,36 @@ export interface InventoryItem {
 
 export type InventorySlots = ReadonlyArray<InventoryItem | null>
 
+export type HeaderItem = {
+  title: string
+  unit?: string
+  value: string
+}
+
+export type HeaderState = {
+  address: HeaderItem
+  balance: HeaderItem
+  status: HeaderItem
+}
+
+export function createDefaultHeaderState(): HeaderState {
+  return {
+    address: {
+      title: 'Address',
+      value: 'Signed out'
+    },
+    balance: {
+      title: 'Balance',
+      unit: 'sats',
+      value: '0'
+    },
+    status: {
+      title: 'Status',
+      value: 'Offline'
+    }
+  }
+}
+
 function readLevelNumber(levelName: string): number {
   const match = levelName.match(/\d+$/)
 
