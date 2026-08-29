@@ -11,10 +11,7 @@ import {
 } from '@babylonjs/gui'
 import {
   createInventorySlots,
-  createDefaultHeaderState,
   formatHudLevelScore,
-  type HeaderItem,
-  type HeaderState,
   type InventorySlots
 } from '../../model/productionHudModel'
 import {
@@ -40,10 +37,6 @@ const UI_IDEAL_HEIGHT = 1600
 const SLOT_BACKGROUND = 'rgba(25, 20, 22, 0.82)'
 const SLOT_BORDER = '#d8b575'
 const LEFT_GROUP_WIDTH = 650
-const HEADER_HEIGHT = 128
-const HEADER_ITEM_WIDTH = 250
-const HEADER_GAP = 12
-const MENU_WIDTH = 74
 const VERSION_FONT_SIZE = 24
 const TITLE_HEIGHT = 58
 const SLOT_SIZE = 82
@@ -60,12 +53,6 @@ export type PromptOptions = {
   body: string
   buttons: readonly PromptButtonOptions[]
   title: string
-}
-
-type HeaderItemView = {
-  control: StackPanel
-  titleText: TextBlock
-  valueText: TextBlock
 }
 
 function createText(
@@ -99,10 +86,6 @@ export class ProductionHud {
   private readonly levelScoreText: TextBlock
   private readonly slots: Rectangle[]
   private readonly leftGroup: StackPanel
-  private readonly header: StackPanel
-  private readonly headerTitle: TextBlock
-  private readonly headerMenu: Button
-  private readonly headerItems: Record<keyof HeaderState, HeaderItemView>
   private readonly prompt: Rectangle
   private readonly promptTitle: TextBlock
   private readonly promptBody: TextBlock
@@ -138,13 +121,6 @@ export class ProductionHud {
     this.leftGroup = leftGroup.control
     this.texture.addControl(this.leftGroup)
 
-    const header = this.createHeader()
-    this.header = header.control
-    this.headerTitle = header.title
-    this.headerMenu = header.menu
-    this.headerItems = header.items
-    this.texture.addControl(this.header)
-
     const prompt = this.createPrompt()
     this.prompt = prompt.control
     this.promptTitle = prompt.title
@@ -158,15 +134,6 @@ export class ProductionHud {
   public setScore(score: number): void {
     this.score = score
     this.refreshLevelScore()
-  }
-
-  public setHeaderState(state: Partial<HeaderState>): void {
-    (['address', 'balance', 'status'] as const).forEach(key => {
-      const item = state[key]
-      if (item) {
-        this.updateHeaderItem(this.headerItems[key], item)
-      }
-    })
   }
 
   public setLevel(levelName: string): void {
@@ -274,32 +241,7 @@ export class ProductionHud {
     )
     this.layout = layout
     this.leftGroup.leftInPixels = layout.left + UI_PADDING
-    this.leftGroup.topInPixels = layout.top + UI_PADDING + HEADER_HEIGHT + 20
-    this.header.leftInPixels = layout.left + UI_PADDING
-    this.header.topInPixels = layout.top + UI_PADDING
-    this.header.widthInPixels = Math.max(
-      0,
-      layout.visibleWidth - UI_PADDING * 2
-    )
-    const itemWidth = Math.min(
-      HEADER_ITEM_WIDTH,
-      Math.max(
-        132,
-        (this.header.widthInPixels - MENU_WIDTH - 24) / 4
-      )
-    )
-    const titleWidth = Math.max(
-      160,
-      this.header.widthInPixels - itemWidth * 3 - MENU_WIDTH - 24
-    )
-    this.headerTitle.widthInPixels = titleWidth
-    this.headerTitle.fontSizeInPixels = itemWidth < 180 ? 24 : 40
-    Object.values(this.headerItems).forEach(item => {
-      item.control.widthInPixels = itemWidth
-      item.titleText.fontSizeInPixels = itemWidth < 180 ? 16 : 24
-      item.valueText.fontSizeInPixels = itemWidth < 180 ? 18 : 30
-    })
-    this.headerMenu.widthInPixels = MENU_WIDTH
+    this.leftGroup.topInPixels = layout.top + UI_PADDING
     this.leftGroup.widthInPixels = Math.min(
       LEFT_GROUP_WIDTH,
       Math.max(0, layout.visibleWidth - UI_PADDING * 2)
@@ -387,90 +329,6 @@ export class ProductionHud {
       levelScoreText,
       slots
     }
-  }
-
-  private createHeader() {
-    const header = new StackPanel('ApplicationHeader')
-    header.isVertical = false
-    header.heightInPixels = HEADER_HEIGHT
-    header.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT
-    header.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP
-    header.leftInPixels = UI_PADDING
-    header.topInPixels = UI_PADDING
-    header.isHitTestVisible = false
-
-    const title = createText(
-      'ProjectTitle',
-      'Alby Demo',
-      HEADER_HEIGHT,
-      40
-    )
-    title.widthInPixels = 360
-    title.textWrapping = false
-    title.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER
-    header.addControl(title)
-
-    const state = createDefaultHeaderState()
-    const items = {
-      address: this.createHeaderItem('Address', state.address),
-      balance: this.createHeaderItem('Balance', state.balance),
-      status: this.createHeaderItem('Status', state.status)
-    }
-    header.addControl(items.address.control)
-    header.addControl(items.balance.control)
-    header.addControl(items.status.control)
-
-    const menu = Button.CreateSimpleButton('HeaderMenu', '...')
-    menu.widthInPixels = MENU_WIDTH
-    menu.heightInPixels = HEADER_HEIGHT
-    menu.color = PRODUCTION_TEXT_COLOR
-    menu.background = 'rgba(9, 14, 25, 0.94)'
-    menu.fontSizeInPixels = 42
-    menu.thickness = 0
-    menu.isHitTestVisible = true
-    menu.onPointerClickObservable.add(() => undefined)
-    header.addControl(menu)
-
-    return { control: header, items, menu, title }
-  }
-
-  private createHeaderItem(title: string, item: HeaderItem) {
-    const control = new StackPanel(`HeaderItem${title}`)
-    control.widthInPixels = HEADER_ITEM_WIDTH
-    control.heightInPixels = HEADER_HEIGHT
-    control.paddingLeftInPixels = HEADER_GAP
-    control.paddingRightInPixels = HEADER_GAP
-    control.background = 'rgba(9, 14, 25, 0.94)'
-    control.isHitTestVisible = false
-
-    const titleText = createText(
-      `Header${title}Title`,
-      item.title,
-      40,
-      24
-    )
-    titleText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER
-    control.addControl(titleText)
-
-    const valueText = createText(
-      `Header${title}Value`,
-      this.formatHeaderValue(item),
-      72,
-      30
-    )
-    valueText.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER
-    valueText.textWrapping = false
-    control.addControl(valueText)
-
-    return { control, titleText, valueText }
-  }
-
-  private formatHeaderValue(item: HeaderItem): string {
-    return item.unit ? `${item.value} ${item.unit}` : item.value
-  }
-
-  private updateHeaderItem(view: HeaderItemView, item: HeaderItem): void {
-    view.valueText.text = this.formatHeaderValue(item)
   }
 
   private refreshLevelScore(): void {

@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
-  createDefaultHeaderState,
   createInventorySlots,
   formatHudLevelScore,
   formatScore
@@ -14,24 +13,6 @@ const readProductionHud = () => readFileSync(
 )
 
 describe('production HUD', () => {
-  it('provides stable pre-login header defaults', () => {
-    expect(createDefaultHeaderState()).toEqual({
-      address: {
-        title: 'Address',
-        value: 'Signed out'
-      },
-      balance: {
-        title: 'Balance',
-        unit: 'sats',
-        value: '0'
-      },
-      status: {
-        title: 'Status',
-        value: 'Offline'
-      }
-    })
-  })
-
   it('formats the level and score together with three-digit padding', () => {
     expect(formatHudLevelScore('Level 1', 0)).toBe(
       'Level: 001 Score: 000'
